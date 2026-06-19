@@ -452,4 +452,4 @@ class ApiKey(BaseModel):
 
 ---
 
-**Status:** Draft — pending HITL review and approval.
+**Status:** Approved v1.0 — 2026-06-19
