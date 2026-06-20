@@ -1,0 +1,18 @@
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
+from document_processor.adapters.persistence.postgresql.models import ApiKeyModel
+
+
+class PostgresApiKeyRepository(ApiKeyRepositoryPort):
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def validate_key(self, key_hash: str) -> bool:
+        stmt = select(ApiKeyModel).where(
+            ApiKeyModel.key_hash == key_hash,
+            ApiKeyModel.revoked == False,  # noqa: E712
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none() is not None
