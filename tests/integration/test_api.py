@@ -125,8 +125,63 @@ class TestDocumentIngestion:
         )
         assert response.status_code in (422, 415)
 
+    def test_post_success(self, client: TestClient, api_key_hash: str) -> None:
+        response = client.post(
+            "/api/v1/documents",
+            headers={"X-API-Key": "test-api-key"},
+            files={"file": ("invoice.jpg", b"valid-jpeg-data", "image/jpeg")},
+            data={"type": "invoice", "region": "AR"},
+        )
+        assert response.status_code == 202
+        data = response.json()
+        assert "document_id" in data
+        assert data["status"] == "PENDING"
+
 
 class TestDocumentStatus:
+    def test_get_document_found(self, client: TestClient, api_key_hash: str) -> None:
+        doc = _make_doc()
+        from document_processor.adapters.web.api.deps import get_document_service
+
+        service = get_document_service()
+        service._repository.get_by_id = AsyncMock(return_value=doc)
+
+        response = client.get(
+            f"/api/v1/documents/{doc.id}",
+            headers={"X-API-Key": "test-api-key"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "COMPLETED"
+        assert data["parsed_data"] is not None
+
+    def test_get_image_success(self, client: TestClient, api_key_hash: str) -> None:
+        doc = _make_doc()
+        from document_processor.adapters.web.api.deps import get_document_service
+
+        service = get_document_service()
+        service._repository.get_by_id = AsyncMock(return_value=doc)
+        service._storage.retrieve = AsyncMock(return_value=b"image-bytes")
+
+        response = client.get(
+            f"/api/v1/documents/{doc.id}/image",
+            headers={"X-API-Key": "test-api-key"},
+        )
+        assert response.status_code == 200
+        assert response.content == b"image-bytes"
+
+    def test_get_image_expired(self, client: TestClient, api_key_hash: str) -> None:
+        doc = _make_doc(status=DocumentStatus.IMAGE_EXPIRED)
+        from document_processor.adapters.web.api.deps import get_document_service
+
+        service = get_document_service()
+        service._repository.get_by_id = AsyncMock(return_value=doc)
+
+        response = client.get(
+            f"/api/v1/documents/{doc.id}/image",
+            headers={"X-API-Key": "test-api-key"},
+        )
+        assert response.status_code == 410
     def test_get_not_found(self, client: TestClient, api_key_hash: str) -> None:
         response = client.get(
             f"/api/v1/documents/{uuid4()}",
@@ -137,3 +192,42 @@ class TestDocumentStatus:
     def test_list_no_auth(self, client: TestClient) -> None:
         response = client.get("/api/v1/documents")
         assert response.status_code == 401
+
+    def test_list_with_data(self, client: TestClient, api_key_hash: str) -> None:
+        from document_processor.adapters.web.api.deps import get_document_service
+
+        docs = [_make_doc(doc_id=uuid4()) for _ in range(5)]
+        service = get_document_service()
+        service._repository.list_documents = AsyncMock(return_value=(docs, 5))
+
+        response = client.get(
+            "/api/v1/documents?page=1&size=10",
+            headers={"X-API-Key": "test-api-key"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["items"]) == 5
+        assert data["total"] == 5
+        assert data["page"] == 1
+        assert data["pages"] == 1
+
+
+class TestRateLimit:
+    def test_rate_limit_triggers_429(self, client: TestClient, api_key_hash: str) -> None:
+        from document_processor.core.config import settings
+
+        original = settings.rate_limit_per_minute
+        settings.rate_limit_per_minute = 2
+
+        for _ in range(3):
+            response = client.post(
+                "/api/v1/documents",
+                headers={"X-API-Key": "test-api-key"},
+                files={"file": ("invoice.jpg", b"data", "image/jpeg")},
+                data={"type": "invoice", "region": "AR"},
+            )
+
+        settings.rate_limit_per_minute = original
+
+        assert response.status_code == 429
+        assert "Retry-After" in response.headers
