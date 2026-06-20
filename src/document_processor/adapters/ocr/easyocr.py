@@ -27,14 +27,14 @@ class EasyOCRAdapter(OCRPort):
 
             return result
 
-        except asyncio.TimeoutError:
-            raise OCRTimeoutError()
+        except TimeoutError as e:
+            raise OCRTimeoutError() from e
         except Exception as e:
             logger.exception("EasyOCR error")
             raise OCRFailureError(str(e)) from e
 
     @staticmethod
-    def _run_ocr(img_array: "np.ndarray") -> OCRResult | None:
+    def _run_ocr(img_array) -> OCRResult | None:
         import easyocr
 
         reader = easyocr.Reader(["es"])
@@ -45,7 +45,7 @@ class EasyOCRAdapter(OCRPort):
 
         texts = []
         confidences = []
-        for bbox, text, conf in results:
+        for _bbox, text, conf in results:
             texts.append(text)
             confidences.append(conf)
 

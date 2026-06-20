@@ -1,9 +1,7 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -14,8 +12,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from document_processor.adapters.persistence.postgresql.models import Base
-from document_processor.core.config import settings
+from document_processor.adapters.persistence.postgresql.models import Base  # noqa: E402
+from document_processor.core.config import settings  # noqa: E402
 
 target_metadata = Base.metadata
 

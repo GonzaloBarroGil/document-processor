@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class StoragePort(ABC):
@@ -8,7 +7,7 @@ class StoragePort(ABC):
         ...
 
     @abstractmethod
-    async def retrieve(self, key: str) -> Optional[bytes]:
+    async def retrieve(self, key: str) -> bytes | None:
         ...
 
     @abstractmethod

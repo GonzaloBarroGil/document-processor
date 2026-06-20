@@ -1,10 +1,16 @@
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy import select
 
+from document_processor.adapters.persistence.postgresql.models import (
+    document_to_model,
+    model_to_document,
+)
+from document_processor.adapters.persistence.postgresql.repository import (
+    PostgresDocumentRepository,
+)
 from document_processor.domain.models.document import (
     Document,
     DocumentStatus,
@@ -13,14 +19,6 @@ from document_processor.domain.models.document import (
 )
 from document_processor.domain.models.parsed_data import ParsedData
 from document_processor.domain.models.validation import ValidationResult
-from document_processor.adapters.persistence.postgresql.repository import (
-    PostgresDocumentRepository,
-)
-from document_processor.adapters.persistence.postgresql.models import (
-    DocumentModel,
-    document_to_model,
-    model_to_document,
-)
 
 
 def _make_domain_doc(
@@ -37,8 +35,8 @@ def _make_domain_doc(
         parsed_data=None,
         validation_result=None,
         error_detail=None,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 
@@ -77,23 +75,37 @@ class TestPostgresDocumentRepository:
         session.flush.assert_called_once()
         assert result.id == doc.id
 
-    async def test_get_by_id_found(self, repo: PostgresDocumentRepository, session: MagicMock) -> None:
+    async def test_get_by_id_found(
+        self, repo: PostgresDocumentRepository, session: MagicMock
+    ) -> None:
         doc = _make_domain_doc()
         model = document_to_model(doc)
-        session.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=model)))
+        session.execute = AsyncMock(
+            return_value=MagicMock(
+                scalar_one_or_none=MagicMock(return_value=model)
+            )
+        )
 
         result = await repo.get_by_id(doc.id)
 
         assert result is not None
         assert result.id == doc.id
 
-    async def test_get_by_id_not_found(self, repo: PostgresDocumentRepository, session: MagicMock) -> None:
-        session.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=None)))
+    async def test_get_by_id_not_found(
+        self, repo: PostgresDocumentRepository, session: MagicMock
+    ) -> None:
+        session.execute = AsyncMock(
+            return_value=MagicMock(
+                scalar_one_or_none=MagicMock(return_value=None)
+            )
+        )
 
         result = await repo.get_by_id(UUID("00000000-0000-0000-0000-000000000001"))
         assert result is None
 
-    async def test_update_status(self, repo: PostgresDocumentRepository, session: MagicMock) -> None:
+    async def test_update_status(
+        self, repo: PostgresDocumentRepository, session: MagicMock
+    ) -> None:
         doc_id = uuid4()
         session.execute = AsyncMock()
 
@@ -101,12 +113,14 @@ class TestPostgresDocumentRepository:
 
         session.execute.assert_called_once()
 
-    async def test_update_parsed_data(self, repo: PostgresDocumentRepository, session: MagicMock) -> None:
+    async def test_update_parsed_data(
+        self, repo: PostgresDocumentRepository, session: MagicMock
+    ) -> None:
         doc_id = uuid4()
         parsed = ParsedData(raw_text="test", confidence=0.9, fields={})
         validation = ValidationResult(
             passed=True, errors=[], region="AR",
-            validated_at=datetime.now(timezone.utc),
+            validated_at=datetime.now(UTC),
         )
         session.execute = AsyncMock()
 

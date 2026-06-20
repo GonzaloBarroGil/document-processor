@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from document_processor.domain.models.document import (
@@ -17,7 +17,7 @@ from document_processor.domain.models.validation import (
 class TestDocumentModel:
     def test_create_document(self) -> None:
         doc_id = uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         doc = Document(
             id=doc_id,
@@ -77,7 +77,7 @@ class TestParsedDataModel:
 
 class TestValidationResultModel:
     def test_passed_validation(self) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         result = ValidationResult(
             passed=True, errors=[], region="AR", validated_at=now
         )
@@ -85,7 +85,7 @@ class TestValidationResultModel:
         assert result.errors == []
 
     def test_failed_validation(self) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         error = ValidationError(
             field="cuit", rule="CUIT_FORMAT", message="Invalid CUIT"
         )

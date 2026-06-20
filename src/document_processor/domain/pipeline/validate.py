@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from document_processor.domain.models.validation import (
     ValidationResult,
@@ -21,7 +21,7 @@ async def validate(
             passed=True,
             errors=[],
             region=region,
-            validated_at=datetime.now(timezone.utc),
+            validated_at=datetime.now(UTC),
         )
         return ValidateOutput(validation_result=result)
 

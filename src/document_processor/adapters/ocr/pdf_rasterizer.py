@@ -11,7 +11,7 @@ async def rasterize_pdf(image_data: bytes) -> bytes:
         pages[0].save(output, format="PNG")
         return output.getvalue()
 
-    widths, heights = zip(*(p.size for p in pages))
+    widths, heights = zip(*(p.size for p in pages), strict=False)
     total_height = sum(heights)
     max_width = max(widths)
 

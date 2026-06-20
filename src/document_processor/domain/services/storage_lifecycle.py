@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from document_processor.core.config import settings
 from document_processor.domain.models.document import DocumentStatus
@@ -42,7 +42,7 @@ class StorageLifecycleService:
     async def _expire_documents(
         self, days: int, include_failed: bool
     ) -> list[str]:
-        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        cutoff = datetime.now(UTC) - timedelta(days=days)
         statuses = [DocumentStatus.COMPLETED]
         if include_failed:
             statuses.append(DocumentStatus.VALIDATION_FAILED)

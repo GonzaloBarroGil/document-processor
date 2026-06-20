@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
@@ -25,7 +25,7 @@ def _make_doc(
         region="AR",
         status=status,
         media_type=MediaType.JPEG,
-        image_key=f"img.jpg",
+        image_key="img.jpg",
         parsed_data=(
             ParsedData(raw_text="Total: 100", confidence=0.95, fields={"total": "100"})
             if status == DocumentStatus.COMPLETED
@@ -34,14 +34,14 @@ def _make_doc(
         validation_result=(
             ValidationResult(
                 passed=True, errors=[], region="AR",
-                validated_at=datetime.now(timezone.utc),
+                validated_at=datetime.now(UTC),
             )
             if status == DocumentStatus.COMPLETED
             else None
         ),
         error_detail=None,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 

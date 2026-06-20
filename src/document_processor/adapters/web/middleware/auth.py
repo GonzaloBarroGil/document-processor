@@ -1,8 +1,9 @@
 import hashlib
+from collections.abc import Awaitable, Callable
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
 
@@ -10,11 +11,15 @@ from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryP
 class AuthMiddleware(BaseHTTPMiddleware):
     PUBLIC_PATHS = {"/api/v1/health", "/openapi.json", "/docs", "/redoc"}
 
-    def __init__(self, app, api_key_repository: ApiKeyRepositoryPort) -> None:
+    def __init__(
+        self, app, api_key_repository: ApiKeyRepositoryPort  # type: ignore[no-untyped-def]
+    ) -> None:
         super().__init__(app)
         self._api_key_repository = api_key_repository
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         if request.url.path in self.PUBLIC_PATHS:
             return await call_next(request)
 

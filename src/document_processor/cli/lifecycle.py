@@ -3,13 +3,13 @@ import logging
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from document_processor.core.config import settings
-from document_processor.core.logging import setup_logging
-from document_processor.domain.services.storage_lifecycle import StorageLifecycleService
 from document_processor.adapters.persistence.postgresql.repository import (
     PostgresDocumentRepository,
 )
 from document_processor.adapters.storage.minio import MinioStorage
+from document_processor.core.config import settings
+from document_processor.core.logging import setup_logging
+from document_processor.domain.services.storage_lifecycle import StorageLifecycleService
 
 logger = logging.getLogger(__name__)
 

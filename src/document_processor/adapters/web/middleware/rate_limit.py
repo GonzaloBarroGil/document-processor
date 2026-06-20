@@ -1,20 +1,23 @@
 import hashlib
 import time
 from collections import defaultdict
+from collections.abc import Awaitable, Callable
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 from document_processor.core.config import settings
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app) -> None:
+    def __init__(self, app) -> None:  # type: ignore[no-untyped-def]
         super().__init__(app)
         self._windows: dict[str, list[float]] = defaultdict(list)
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         if request.method != "POST":
             return await call_next(request)
 

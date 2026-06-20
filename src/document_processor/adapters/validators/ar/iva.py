@@ -1,4 +1,3 @@
-import re
 
 from document_processor.domain.models.validation import ValidationError
 

@@ -1,6 +1,5 @@
 from document_processor.domain.services.document_service import DocumentService
 
-
 _document_service: DocumentService | None = None
 
 

@@ -1,5 +1,4 @@
 from pytest_bdd import given, scenarios, then, when
-from starlette.testclient import TestClient
 
 
 @given(

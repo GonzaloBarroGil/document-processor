@@ -1,6 +1,5 @@
 from datetime import datetime
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -9,13 +8,13 @@ from document_processor.domain.models.parsed_data import ParsedData
 from document_processor.domain.models.validation import ValidationResult
 
 
-class DocumentType(str, Enum):
+class DocumentType(StrEnum):
     INVOICE = "invoice"
     TICKET = "ticket"
     PAYMENT_RECEIPT = "payment_receipt"
 
 
-class DocumentStatus(str, Enum):
+class DocumentStatus(StrEnum):
     PENDING = "PENDING"
     OCR_IN_PROGRESS = "OCR_IN_PROGRESS"
     VALIDATING = "VALIDATING"
@@ -25,7 +24,7 @@ class DocumentStatus(str, Enum):
     IMAGE_EXPIRED = "IMAGE_EXPIRED"
 
 
-class MediaType(str, Enum):
+class MediaType(StrEnum):
     JPEG = "image/jpeg"
     PNG = "image/png"
     HEIC = "image/heic"
@@ -39,8 +38,8 @@ class Document(BaseModel):
     status: DocumentStatus
     media_type: MediaType
     image_key: str
-    parsed_data: Optional[ParsedData] = None
-    validation_result: Optional[ValidationResult] = None
-    error_detail: Optional[str] = None
+    parsed_data: ParsedData | None = None
+    validation_result: ValidationResult | None = None
+    error_detail: str | None = None
     created_at: datetime
     updated_at: datetime

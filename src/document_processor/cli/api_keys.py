@@ -1,13 +1,15 @@
 import hashlib
 import secrets
 import sys
+from datetime import UTC
 
-from document_processor.core.config import settings
-from document_processor.adapters.persistence.postgresql.models import ApiKeyModel
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from document_processor.adapters.persistence.postgresql.models import ApiKeyModel
+from document_processor.core.config import settings
 
-def generate_key() -> tuple[str, str]:
+
+def generate_key() -> tuple[str, str, str]:
     raw = "sk-proj-" + secrets.token_urlsafe(32)
     key_hash = hashlib.sha256(raw.encode()).hexdigest()
     prefix = raw[:8]
@@ -24,7 +26,7 @@ async def create_key(label: str) -> None:
         session.add(model)
         await session.commit()
 
-    print(f"API Key created (save it now — not shown again):")
+    print("API Key created (save it now — not shown again):")
     print(f"  Key:   {raw}")
     print(f"  Label: {label}")
 
@@ -50,13 +52,14 @@ async def revoke_key(prefix: str) -> None:
     session_factory = async_sessionmaker(engine)
 
     async with session_factory() as session:
-        from sqlalchemy import select, update
-        from datetime import datetime, timezone
+        from datetime import datetime
+
+        from sqlalchemy import update
 
         stmt = (
             update(ApiKeyModel)
             .where(ApiKeyModel.prefix == prefix)
-            .values(revoked=True, revoked_at=datetime.now(timezone.utc))
+            .values(revoked=True, revoked_at=datetime.now(UTC))
         )
         result = await session.execute(stmt)
         await session.commit()

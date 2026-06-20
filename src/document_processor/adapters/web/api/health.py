@@ -4,7 +4,7 @@ router = APIRouter(prefix="/api/v1/health", tags=["health"])
 
 
 @router.get("")
-async def health():
+async def health() -> dict[str, str | float]:
     return {
         "status": "ok",
         "ocr_engine": "paddle",

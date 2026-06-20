@@ -46,6 +46,8 @@ indent-style = "space"
 [tool.mypy]
 strict = true
 python_version = "3.12"
+mypy_path = "src"
+namespace_packages = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -1,19 +1,19 @@
-from typing import Optional
+from datetime import UTC
 from uuid import UUID
 
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from document_processor.adapters.persistence.postgresql.models import (
+    DocumentModel,
+    document_to_model,
+    model_to_document,
+)
 from document_processor.domain.models.document import Document, DocumentStatus
 from document_processor.domain.models.parsed_data import ParsedData
 from document_processor.domain.models.validation import ValidationResult
 from document_processor.domain.ports.document_repository import (
     DocumentRepositoryPort,
-)
-from document_processor.adapters.persistence.postgresql.models import (
-    DocumentModel,
-    document_to_model,
-    model_to_document,
 )
 
 
@@ -27,7 +27,7 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
         await self._session.flush()
         return document
 
-    async def get_by_id(self, document_id: UUID) -> Optional[Document]:
+    async def get_by_id(self, document_id: UUID) -> Document | None:
         stmt = select(DocumentModel).where(DocumentModel.id == document_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
@@ -37,9 +37,9 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
 
     async def list_documents(
         self,
-        status: Optional[DocumentStatus] = None,
-        type: Optional[str] = None,
-        region: Optional[str] = None,
+        status: DocumentStatus | None = None,
+        type: str | None = None,
+        region: str | None = None,
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[Document], int]:
@@ -70,12 +70,12 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
     async def update_status(
         self, document_id: UUID, status: DocumentStatus
     ) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         stmt = (
             update(DocumentModel)
             .where(DocumentModel.id == document_id)
-            .values(status=status.value, updated_at=datetime.now(timezone.utc))
+            .values(status=status.value, updated_at=datetime.now(UTC))
         )
         await self._session.execute(stmt)
 
@@ -83,13 +83,13 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
         self,
         document_id: UUID,
         parsed_data: ParsedData,
-        validation_result: Optional[ValidationResult] = None,
+        validation_result: ValidationResult | None = None,
     ) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         values = {
             "parsed_data": parsed_data.model_dump(),
-            "updated_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(UTC),
         }
         if validation_result:
             values["validation_result"] = validation_result.model_dump()

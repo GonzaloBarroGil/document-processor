@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from document_processor.core.errors import FileTooLargeError, UnsupportedMediaTypeError
@@ -57,7 +57,7 @@ def ingest(input_: IngestInput) -> IngestOutput:
     document_id = uuid4()
     image_ext = media_type_to_ext(input_.media_type)
     image_key = f"{document_id}.{image_ext}"
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     document = Document(
         id=document_id,

@@ -8,10 +8,14 @@ from document_processor.core.errors import (
     OCRFailureError,
     UnsupportedMediaTypeError,
 )
-from document_processor.domain.models.document import Document, DocumentStatus
-from document_processor.domain.models.document import DocumentType, MediaType
+from document_processor.domain.models.document import (
+    Document,
+    DocumentStatus,
+    DocumentType,
+    MediaType,
+)
 from document_processor.domain.pipeline.extract import extract
-from document_processor.domain.pipeline.ingest import IngestInput, IngestOutput, ingest
+from document_processor.domain.pipeline.ingest import IngestInput, ingest
 from document_processor.domain.pipeline.parse import parse
 from document_processor.domain.pipeline.persist import persist
 from document_processor.domain.pipeline.preprocess import preprocess

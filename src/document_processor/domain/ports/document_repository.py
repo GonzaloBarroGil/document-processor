@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 from uuid import UUID
 
 from document_processor.domain.models.document import Document, DocumentStatus
@@ -13,15 +12,15 @@ class DocumentRepositoryPort(ABC):
         ...
 
     @abstractmethod
-    async def get_by_id(self, document_id: UUID) -> Optional[Document]:
+    async def get_by_id(self, document_id: UUID) -> Document | None:
         ...
 
     @abstractmethod
     async def list_documents(
         self,
-        status: Optional[DocumentStatus] = None,
-        type: Optional[str] = None,
-        region: Optional[str] = None,
+        status: DocumentStatus | None = None,
+        type: str | None = None,
+        region: str | None = None,
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[Document], int]:
@@ -38,7 +37,7 @@ class DocumentRepositoryPort(ABC):
         self,
         document_id: UUID,
         parsed_data: ParsedData,
-        validation_result: Optional[ValidationResult] = None,
+        validation_result: ValidationResult | None = None,
     ) -> None:
         ...
 

@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
 from document_processor.adapters.persistence.postgresql.models import ApiKeyModel
+from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
 
 
 class PostgresApiKeyRepository(ApiKeyRepositoryPort):

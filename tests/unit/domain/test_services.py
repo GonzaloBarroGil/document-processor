@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
@@ -37,8 +37,8 @@ def _make_document(
         parsed_data=None,
         validation_result=None,
         error_detail=None,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 
@@ -176,7 +176,7 @@ class TestStorageLifecycleService:
             status=DocumentStatus.COMPLETED,
             doc_id=UUID("00000000-0000-0000-0000-000000000001"),
         )
-        old_doc.created_at = datetime(2020, 1, 1, tzinfo=timezone.utc)
+        old_doc.created_at = datetime(2020, 1, 1, tzinfo=UTC)
         repo.list_documents = AsyncMock(return_value=([old_doc], 1))
         repo.update_status = AsyncMock()
         storage.delete = AsyncMock()

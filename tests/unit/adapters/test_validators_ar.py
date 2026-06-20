@@ -1,13 +1,12 @@
-import pytest
 
+from document_processor.adapters.validators.ar.afip import (
+    validate_cae_format,
+    validate_caea_format,
+)
 from document_processor.adapters.validators.ar.cuit import (
     clean_cuit,
     validate_cuit_digits,
     validate_cuit_format,
-)
-from document_processor.adapters.validators.ar.afip import (
-    validate_cae_format,
-    validate_caea_format,
 )
 from document_processor.adapters.validators.ar.iva import (
     validate_iva_breakdown,

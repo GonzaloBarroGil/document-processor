@@ -1,13 +1,13 @@
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from document_processor.adapters.persistence.postgresql.models import DocumentModel
 from document_processor.core.config import settings
 from document_processor.domain.models.document import DocumentStatus
-from document_processor.adapters.persistence.postgresql.models import DocumentModel
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ async def _claim_pending(session: AsyncSession, worker_id: str) -> DocumentModel
     lock_stmt = (
         update(DocumentModel)
         .where(DocumentModel.id == doc.id)
-        .values(locked_by=worker_id, locked_at=datetime.now(timezone.utc))
+        .values(locked_by=worker_id, locked_at=datetime.now(UTC))
     )
     await session.execute(lock_stmt)
     await session.commit()

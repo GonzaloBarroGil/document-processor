@@ -18,7 +18,7 @@ def validate_cuit_digits(cuit: str) -> bool:
     multipliers = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2]
     digits = [int(d) for d in cleaned]
 
-    weighted_sum = sum(d * m for d, m in zip(digits[:10], multipliers))
+    weighted_sum = sum(d * m for d, m in zip(digits[:10], multipliers, strict=True))
     remainder = weighted_sum % 11
     check_digit = 11 - remainder
     if check_digit == 11:

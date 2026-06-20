@@ -1,14 +1,13 @@
-from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from document_processor.domain.services.document_service import DocumentService
-from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
-from document_processor.domain.ports.region_validator import RegionValidatorPort
 from document_processor.adapters.web.api import documents, health
 from document_processor.adapters.web.api.deps import set_document_service
 from document_processor.adapters.web.middleware.auth import AuthMiddleware
 from document_processor.adapters.web.middleware.rate_limit import RateLimitMiddleware
+from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
+from document_processor.domain.ports.region_validator import RegionValidatorPort
+from document_processor.domain.services.document_service import DocumentService
 
 
 def create_app(

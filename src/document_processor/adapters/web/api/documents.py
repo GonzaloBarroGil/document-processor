@@ -1,27 +1,28 @@
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
-from starlette.responses import Response, JSONResponse
+from starlette.responses import JSONResponse, Response
 
-from document_processor.core.config import settings
+from document_processor.adapters.web.api.deps import get_document_service
 from document_processor.core.errors import (
     DocumentNotFoundError,
     FileTooLargeError,
     ImageExpiredError,
     UnsupportedMediaTypeError,
 )
-from document_processor.adapters.web.api.deps import get_document_service
+from document_processor.domain.services.document_service import DocumentService
 
 router = APIRouter(prefix="/api/v1/documents", tags=["documents"])
 
 
-@router.post("", status_code=202)
+@router.post("", status_code=202, response_model=None)  # type: ignore[call-overload]
 async def ingest_document(
-    file: UploadFile = File(...),
+    file: UploadFile = File(...),  # noqa: B008
     type: str = Form(...),
     region: str = Form(...),
-    service=Depends(get_document_service),
-):
+    service: DocumentService = Depends(get_document_service),  # noqa: B008
+) -> dict[str, str] | JSONResponse:
     try:
         content = await file.read()
         media_type = file.content_type or "application/octet-stream"
@@ -44,11 +45,11 @@ async def ingest_document(
         return JSONResponse(status_code=413, content={"detail": str(e)})
 
 
-@router.get("/{document_id}")
+@router.get("/{document_id}", response_model=None)
 async def get_document(
     document_id: UUID,
-    service=Depends(get_document_service),
-):
+    service: DocumentService = Depends(get_document_service),  # noqa: B008
+) -> dict[str, Any] | JSONResponse:
     try:
         doc = await service.get_document(document_id)
         return doc.model_dump(mode="json")
@@ -63,8 +64,8 @@ async def list_documents(
     region: str | None = Query(None),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
-    service=Depends(get_document_service),
-):
+    service: DocumentService = Depends(get_document_service),  # noqa: B008
+) -> dict[str, Any]:
     docs, total = await service.list_documents(
         status=status, type=type, region=region, page=page, size=size
     )
@@ -77,11 +78,11 @@ async def list_documents(
     }
 
 
-@router.get("/{document_id}/image")
+@router.get("/{document_id}/image", response_model=None)
 async def get_document_image(
     document_id: UUID,
-    service=Depends(get_document_service),
-):
+    service: DocumentService = Depends(get_document_service),  # noqa: B008
+) -> Response | JSONResponse:
     try:
         image_data = await service.get_document_image(document_id)
         return Response(content=image_data, media_type="image/jpeg")

@@ -27,14 +27,14 @@ class PaddleOCRAdapter(OCRPort):
 
             return result
 
-        except asyncio.TimeoutError:
-            raise OCRTimeoutError()
+        except TimeoutError as e:
+            raise OCRTimeoutError() from e
         except Exception as e:
             logger.exception("PaddleOCR error")
             raise OCRFailureError(str(e)) from e
 
     @staticmethod
-    def _run_ocr(img_array: "np.ndarray") -> OCRResult | None:
+    def _run_ocr(img_array) -> OCRResult | None:
         from paddleocr import PaddleOCR
 
         ocr = PaddleOCR(lang="es", use_angle_cls=True)

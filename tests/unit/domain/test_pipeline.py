@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
@@ -154,7 +154,7 @@ class TestValidate:
                 passed=True,
                 errors=[],
                 region="AR",
-                validated_at=datetime.now(timezone.utc),
+                validated_at=datetime.now(UTC),
             )
         )
 
