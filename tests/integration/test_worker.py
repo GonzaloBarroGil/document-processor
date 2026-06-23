@@ -1,11 +1,15 @@
 import uuid
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime
 
 import pytest
-from testcontainers.postgres import PostgresContainer
 from testcontainers.minio import MinioContainer
+from testcontainers.postgres import PostgresContainer
 
+from document_processor.adapters.persistence.postgresql.models import Base
+from document_processor.adapters.persistence.postgresql.repository import (
+    PostgresDocumentRepository,
+)
+from document_processor.adapters.storage.minio import MinioStorage
 from document_processor.domain.models.document import (
     Document,
     DocumentStatus,
@@ -13,12 +17,6 @@ from document_processor.domain.models.document import (
     MediaType,
 )
 from document_processor.domain.models.parsed_data import ParsedData
-from document_processor.domain.services.document_service import DocumentService
-from document_processor.adapters.persistence.postgresql.repository import (
-    PostgresDocumentRepository,
-)
-from document_processor.adapters.persistence.postgresql.models import Base
-from document_processor.adapters.storage.minio import MinioStorage
 
 
 @pytest.fixture(scope="module")
@@ -35,8 +33,9 @@ def minio_container():
 
 @pytest.fixture
 async def db_session(db_container):
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
     from urllib.parse import urlparse, urlunparse
+
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
     url = urlparse(db_container.get_connection_url())
     db_url = urlunparse(
@@ -61,6 +60,8 @@ async def repo(db_session) -> PostgresDocumentRepository:
 
 @pytest.fixture
 def mock_ocr():
+    from unittest.mock import AsyncMock, MagicMock
+
     ocr = MagicMock()
     ocr.extract = AsyncMock()
     return ocr
@@ -75,7 +76,7 @@ def mock_storage(minio_container):
 class TestWorkerEndToEnd:
     async def test_document_create_and_retrieve(self, repo, db_session):
         doc_id = uuid.uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         doc = Document(
             id=doc_id,
             type=DocumentType.INVOICE,
@@ -98,7 +99,7 @@ class TestWorkerEndToEnd:
 
     async def test_status_update_flow(self, repo, db_session):
         doc_id = uuid.uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         doc = Document(
             id=doc_id,
             type=DocumentType.INVOICE,
@@ -125,7 +126,7 @@ class TestWorkerEndToEnd:
 
     async def test_update_parsed_data_persists(self, repo, db_session):
         doc_id = uuid.uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         doc = Document(
             id=doc_id,
             type=DocumentType.INVOICE,
@@ -149,9 +150,9 @@ class TestWorkerEndToEnd:
         assert retrieved.parsed_data.fields["total"] == "1500.00"
 
     async def test_list_documents_with_filters(self, repo, db_session):
-        for i in range(3):
+        for _i in range(3):
             doc_id = uuid.uuid4()
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             doc = Document(
                 id=doc_id,
                 type=DocumentType.INVOICE,

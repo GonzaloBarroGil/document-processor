@@ -14,22 +14,40 @@ def api_key_hash() -> str:
 
 
 @pytest.fixture
-def bdd_test_client(api_key_hash: str) -> TestClient:
+def bdd_mock_repo() -> MagicMock:
     repo = MagicMock()
     repo.get_by_id = AsyncMock(return_value=None)
     repo.create = AsyncMock()
     repo.list_documents = AsyncMock(return_value=([], 0))
     repo.update_status = AsyncMock()
     repo.update_parsed_data = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def bdd_mock_storage() -> MagicMock:
     storage = MagicMock()
     storage.store = AsyncMock()
     storage.retrieve = AsyncMock()
-    ocr = MagicMock()
+    return storage
 
+
+@pytest.fixture
+def bdd_mock_ocr() -> MagicMock:
+    return MagicMock()
+
+
+@pytest.fixture
+def bdd_test_client(
+    api_key_hash: str,
+    bdd_mock_repo: MagicMock,
+    bdd_mock_storage: MagicMock,
+    bdd_mock_ocr: MagicMock,
+) -> TestClient:
     service = DocumentService(
-        repository=repo,
-        storage=storage,
-        ocr=ocr,
+        repository=bdd_mock_repo,
+        storage=bdd_mock_storage,
+        ocr=bdd_mock_ocr,
         validator_registry={},
     )
 

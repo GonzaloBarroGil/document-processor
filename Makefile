@@ -7,7 +7,7 @@ lint:
 	ruff check src/ tests/
 
 typecheck:
-	mypy src/
+	mypy -p document_processor
 
 test:
 	pytest tests/ -v
