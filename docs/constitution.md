@@ -1,4 +1,4 @@
-# Constitution v1.0
+# Constitution v1.1
 
 ## Document Processing Service
 
@@ -99,7 +99,7 @@ This isolates CPU-bound OCR from API responsiveness and allows horizontal scalin
 | --------------- | ---------------------------------------------------------------------------------------- |
 | **PEP 8**       | Mandatory; enforced by ruff                                                              |
 | **ruff ruleset** | `E, F, I, N, W, UP, B, SIM, C4` minimum. No warnings allowed in CI                       |
-| **mypy**        | `strict = true` in pyproject.toml. No `type: ignore` without HITL justification           |
+| **mypy**        | `strict = true` in pyproject.toml. No `type: ignore` without HITL justification. Third-party libraries lacking type stubs may be used when they are the best open-source option for a critical function. Each exemption must be documented with: (a) reason no typed alternative exists, (b) link to upstream confirming stub absence, (c) runtime compensating control (Pydantic boundary parsing). Current exemptions: paddleocr, easyocr, pillow-heif — see `docs/adr/011-ocr-typing-tradeoff.md`. |
 | **Test coverage** | Domain core: ≥90%. Adapters: ≥70%. Reported via `pytest --cov`                           |
 | **BDD**         | Every API endpoint has at least one `.feature` file. Step definitions live in `tests/bdd/` |
 | **TDD**         | Unit tests written before implementation for domain logic. Red → Green → Refactor         |
@@ -187,4 +187,4 @@ Only HITL performs commits. No AI-initiated destructive operations.
 
 ---
 
-**Status:** Approved v1.0 — 2026-06-19
+**Status:** Approved v1.1 — 2026-06-20
