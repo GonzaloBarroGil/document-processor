@@ -4,6 +4,7 @@ from collections.abc import Awaitable, Callable
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
+from starlette.types import ASGIApp
 
 from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
 
@@ -15,8 +16,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     def __init__(
         self,
-        app,
-        api_key_repository: ApiKeyRepositoryPort,  # type: ignore[no-untyped-def]
+        app: ASGIApp,
+        api_key_repository: ApiKeyRepositoryPort,
     ) -> None:
         super().__init__(app)
         self._api_key_repository = api_key_repository

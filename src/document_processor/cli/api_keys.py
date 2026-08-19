@@ -2,7 +2,9 @@ import hashlib
 import secrets
 import sys
 from datetime import UTC
+from typing import Any, cast
 
+from sqlalchemy import CursorResult
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from document_processor.adapters.persistence.postgresql.models import ApiKeyModel
@@ -65,7 +67,7 @@ async def revoke_key(prefix: str) -> None:
             .where(ApiKeyModel.prefix == prefix)
             .values(revoked=True, revoked_at=datetime.now(UTC))
         )
-        result = await session.execute(stmt)
+        result = cast(CursorResult[Any], await session.execute(stmt))
         await session.commit()
 
         if result.rowcount == 0:

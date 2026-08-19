@@ -1,9 +1,10 @@
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
 from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from document_processor.adapters.persistence.postgresql.models import DocumentModel
 from document_processor.core.config import settings
@@ -13,7 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 async def poll_queue(
-    session_factory, worker_id: str, process_fn, stop_event: asyncio.Event
+    session_factory: async_sessionmaker[AsyncSession],
+    worker_id: str,
+    process_fn: Callable[[DocumentModel], Awaitable[None]],
+    stop_event: asyncio.Event,
 ) -> None:
     """Continuously claim and process pending documents until the stop event is set."""
     while not stop_event.is_set():

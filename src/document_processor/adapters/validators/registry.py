@@ -11,10 +11,7 @@ class ValidatorRegistry:
 
     def discover(self) -> None:
         """Load and register all validators advertised via the validators entry point."""
-        try:
-            eps = entry_points(group="document_processor.validators")
-        except TypeError:
-            eps = entry_points().get("document_processor.validators", [])
+        eps = entry_points(group="document_processor.validators")
 
         for ep in eps:
             validator_cls = ep.load()

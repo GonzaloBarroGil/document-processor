@@ -1,6 +1,8 @@
 import asyncio
 import logging
 
+import numpy as np
+
 from document_processor.core.errors import OCRFailureError, OCRTimeoutError
 from document_processor.domain.models.document import MediaType
 from document_processor.domain.ports.ocr import OCRPort, OCRResult
@@ -14,7 +16,6 @@ class PaddleOCRAdapter(OCRPort):
     async def extract(self, image_data: bytes, media_type: MediaType) -> OCRResult:
         """Extract text and confidence from an image using PaddleOCR."""
         try:
-            import numpy as np
             from PIL import Image
 
             img = Image.open(__import__("io").BytesIO(image_data))
@@ -37,8 +38,8 @@ class PaddleOCRAdapter(OCRPort):
             raise OCRFailureError(str(e)) from e
 
     @staticmethod
-    def _run_ocr(img_array) -> OCRResult | None:
-        from paddleocr import PaddleOCR
+    def _run_ocr(img_array: np.ndarray) -> OCRResult | None:
+        from paddleocr import PaddleOCR  # type: ignore[import-untyped]  # ADR-011
 
         ocr = PaddleOCR(lang="es", use_angle_cls=True)
         results = ocr.ocr(img_array)

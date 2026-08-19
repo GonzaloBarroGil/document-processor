@@ -16,7 +16,7 @@ from document_processor.domain.services.document_service import DocumentService
 router = APIRouter(prefix="/api/v1/documents", tags=["documents"])
 
 
-@router.post("", status_code=202, response_model=None)  # type: ignore[call-overload]
+@router.post("", status_code=202, response_model=None)
 async def ingest_document(
     file: UploadFile = File(...),  # noqa: B008
     type: str = Form(...),

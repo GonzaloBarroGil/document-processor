@@ -7,6 +7,10 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from document_processor.adapters.ocr.easyocr import EasyOCRAdapter
 from document_processor.adapters.ocr.paddle import PaddleOCRAdapter
+from document_processor.adapters.persistence.postgresql.models import (
+    DocumentModel,
+    model_to_document,
+)
 from document_processor.adapters.persistence.postgresql.repository import (
     PostgresDocumentRepository,
 )
@@ -20,11 +24,7 @@ from document_processor.domain.services.document_service import DocumentService
 logger = logging.getLogger(__name__)
 
 
-async def _process_document(service: DocumentService, doc) -> None:
-    from document_processor.adapters.persistence.postgresql.models import (
-        model_to_document,
-    )
-
+async def _process_document(service: DocumentService, doc: DocumentModel) -> None:
     domain_doc = model_to_document(doc)
     await service.process_document(domain_doc)
 

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import Boolean, DateTime, Float, String, Text
@@ -35,8 +36,8 @@ class DocumentModel(Base):
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="PENDING")
     media_type: Mapped[str] = mapped_column(String(50), nullable=False)
     image_key: Mapped[str] = mapped_column(String(255), nullable=False)
-    parsed_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    validation_result: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    parsed_data: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    validation_result: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     error_detail: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
