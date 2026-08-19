@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -41,6 +42,14 @@ class Settings(BaseSettings):
     worker_poll_interval_seconds: float = 1.0
     worker_visibility_timeout_seconds: int = 300
     worker_max_retries: int = 3
+
+    jwt_secret: str = Field(
+        default="dev-only-jwt-secret-please-change-me-in-production",
+        min_length=32,
+    )
+    jwt_algorithm: str = "HS256"
+    access_token_ttl_seconds: int = 15 * 60
+    refresh_token_ttl_seconds: int = 7 * 24 * 60 * 60
 
     log_level: str = "INFO"
 

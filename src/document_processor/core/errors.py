@@ -91,3 +91,15 @@ class MissingApiKeyError(AuthenticationError):
     """Raised when a required API key is missing."""
 
     pass
+
+
+class InvalidCredentialsError(AuthenticationError):
+    """Raised when username/password authentication fails."""
+
+    pass
+
+
+class InvalidTokenError(AuthenticationError):
+    """Raised when a JWT is missing, expired, malformed, or otherwise invalid."""
+
+    pass
