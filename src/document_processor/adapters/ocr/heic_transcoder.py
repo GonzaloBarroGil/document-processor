@@ -4,6 +4,7 @@ from document_processor.core.errors import HeicTranscodingError
 
 
 async def transcode_heic(image_data: bytes) -> bytes:
+    """Transcode a HEIC image to PNG bytes."""
     try:
         from PIL import Image
         from pillow_heif import register_heif_opener

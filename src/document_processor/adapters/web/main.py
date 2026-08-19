@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 
 from document_processor.adapters.web.api import documents, health
@@ -15,6 +14,7 @@ def create_app(
     api_key_repository: ApiKeyRepositoryPort,
     validator_registry: dict[str, RegionValidatorPort],
 ) -> FastAPI:
+    """Create and configure the FastAPI application."""
     set_document_service(document_service)
 
     app = FastAPI(title="Document Processor", version="0.1.0")

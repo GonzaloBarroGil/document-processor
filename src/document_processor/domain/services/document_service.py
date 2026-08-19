@@ -31,6 +31,8 @@ logger = logging.getLogger(__name__)
 
 
 class DocumentService:
+    """Orchestrates document ingestion, processing, and retrieval."""
+
     def __init__(
         self,
         repository: DocumentRepositoryPort,
@@ -51,15 +53,14 @@ class DocumentService:
         region: str,
         media_type_value: str,
     ) -> Document:
+        """Ingest a document and store its image for async processing."""
         try:
             media_type = MediaType(media_type_value)
             document_type = DocumentType(document_type_value)
         except ValueError as e:
             raise UnsupportedMediaTypeError(media_type_value) from e
 
-        allowed_media_types = [
-            MediaType(mt) for mt in settings.allowed_media_types
-        ]
+        allowed_media_types = [MediaType(mt) for mt in settings.allowed_media_types]
 
         input_ = IngestInput(
             file_bytes=file_bytes,
@@ -83,6 +84,7 @@ class DocumentService:
         return output.document
 
     async def get_document(self, document_id: UUID) -> Document:
+        """Return the document with the given id."""
         doc = await self._repository.get_by_id(document_id)
         if doc is None:
             raise DocumentNotFoundError(str(document_id))
@@ -96,12 +98,14 @@ class DocumentService:
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[Document], int]:
+        """Return a filtered page of documents and the total count."""
         doc_status = DocumentStatus(status) if status else None
         return await self._repository.list_documents(
             status=doc_status, type=type, region=region, page=page, size=size
         )
 
     async def get_document_image(self, document_id: UUID) -> bytes:
+        """Return the stored image bytes for the given document."""
         doc = await self._repository.get_by_id(document_id)
         if doc is None:
             raise DocumentNotFoundError(str(document_id))
@@ -114,10 +118,9 @@ class DocumentService:
         return image_data
 
     async def process_document(self, document: Document) -> None:
+        """Run the OCR, parse, validate, and persist pipeline for a document."""
         try:
-            await self._repository.update_status(
-                document.id, DocumentStatus.OCR_IN_PROGRESS
-            )
+            await self._repository.update_status(document.id, DocumentStatus.OCR_IN_PROGRESS)
 
             image_data = await self._storage.retrieve(document.image_key)
             if image_data is None:
@@ -134,14 +137,10 @@ class DocumentService:
 
             parsed = parse(extracted.raw_text, extracted.confidence)
 
-            await self._repository.update_status(
-                document.id, DocumentStatus.VALIDATING
-            )
+            await self._repository.update_status(document.id, DocumentStatus.VALIDATING)
 
             validator = self._validator_registry.get(document.region)
-            validated = await validate_step(
-                validator, parsed.parsed_data.fields, document.region
-            )
+            validated = await validate_step(validator, parsed.parsed_data.fields, document.region)
 
             status = (
                 DocumentStatus.COMPLETED
@@ -158,9 +157,5 @@ class DocumentService:
             )
 
         except OCRFailureError as e:
-            logger.error(
-                "OCR failed for document %s: %s", document.id, e.detail
-            )
-            await self._repository.update_status(
-                document.id, DocumentStatus.OCR_FAILED
-            )
+            logger.error("OCR failed for document %s: %s", document.id, e.detail)
+            await self._repository.update_status(document.id, DocumentStatus.OCR_FAILED)

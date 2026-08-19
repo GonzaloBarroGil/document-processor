@@ -9,12 +9,16 @@ from document_processor.domain.models.validation import ValidationResult
 
 
 class DocumentType(StrEnum):
+    """The kind of document being processed."""
+
     INVOICE = "invoice"
     TICKET = "ticket"
     PAYMENT_RECEIPT = "payment_receipt"
 
 
 class DocumentStatus(StrEnum):
+    """The lifecycle status of a document."""
+
     PENDING = "PENDING"
     OCR_IN_PROGRESS = "OCR_IN_PROGRESS"
     VALIDATING = "VALIDATING"
@@ -25,6 +29,8 @@ class DocumentStatus(StrEnum):
 
 
 class MediaType(StrEnum):
+    """The MIME type of an uploaded document image."""
+
     JPEG = "image/jpeg"
     PNG = "image/png"
     HEIC = "image/heic"
@@ -32,6 +38,8 @@ class MediaType(StrEnum):
 
 
 class Document(BaseModel):
+    """A document ingested for OCR processing and validation."""
+
     id: UUID
     type: DocumentType
     region: str

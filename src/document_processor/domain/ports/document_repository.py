@@ -7,12 +7,16 @@ from document_processor.domain.models.validation import ValidationResult
 
 
 class DocumentRepositoryPort(ABC):
+    """Port for persisting and querying documents."""
+
     @abstractmethod
     async def create(self, document: Document) -> Document:
+        """Persist a new document and return it."""
         ...
 
     @abstractmethod
     async def get_by_id(self, document_id: UUID) -> Document | None:
+        """Return the document with the given id, or None if absent."""
         ...
 
     @abstractmethod
@@ -24,12 +28,12 @@ class DocumentRepositoryPort(ABC):
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[Document], int]:
+        """Return a filtered page of documents and the total count."""
         ...
 
     @abstractmethod
-    async def update_status(
-        self, document_id: UUID, status: DocumentStatus
-    ) -> None:
+    async def update_status(self, document_id: UUID, status: DocumentStatus) -> None:
+        """Update the status of the given document."""
         ...
 
     @abstractmethod
@@ -39,14 +43,15 @@ class DocumentRepositoryPort(ABC):
         parsed_data: ParsedData,
         validation_result: ValidationResult | None = None,
     ) -> None:
+        """Update the parsed data and optional validation result of a document."""
         ...
 
     @abstractmethod
-    async def fetch_pending(
-        self, worker_id: str, limit: int = 1
-    ) -> list[Document]:
+    async def fetch_pending(self, worker_id: str, limit: int = 1) -> list[Document]:
+        """Return pending, unlocked documents for a worker to process."""
         ...
 
     @abstractmethod
     async def release_lock(self, document_id: UUID) -> None:
+        """Release the lock held on the given document."""
         ...

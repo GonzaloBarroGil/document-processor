@@ -1,8 +1,8 @@
-
 from document_processor.domain.models.validation import ValidationError
 
 
 def validate_iva_breakdown(fields: dict[str, str]) -> list[ValidationError]:
+    """Validate that the total matches the neto gravado plus the IVA breakdown."""
     errors: list[ValidationError] = []
 
     total_str = fields.get("total")

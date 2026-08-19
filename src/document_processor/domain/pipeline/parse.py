@@ -2,11 +2,14 @@ from document_processor.domain.models.parsed_data import ParsedData, RecipientDa
 
 
 class ParseOutput:
+    """The structured data produced by the parse step."""
+
     def __init__(self, parsed_data: ParsedData) -> None:
         self.parsed_data = parsed_data
 
 
 def parse(raw_text: str, confidence: float) -> ParseOutput:
+    """Turn raw OCR text into structured fields and recipients."""
     fields: dict[str, str] = {}
     recipients: list[RecipientData] = []
 

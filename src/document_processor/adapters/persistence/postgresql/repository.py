@@ -18,16 +18,20 @@ from document_processor.domain.ports.document_repository import (
 
 
 class PostgresDocumentRepository(DocumentRepositoryPort):
+    """PostgreSQL-backed implementation of the document repository port."""
+
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def create(self, document: Document) -> Document:
+        """Persist a new document and return it."""
         model = document_to_model(document)
         self._session.add(model)
         await self._session.flush()
         return document
 
     async def get_by_id(self, document_id: UUID) -> Document | None:
+        """Return the document with the given id, or None if absent."""
         stmt = select(DocumentModel).where(DocumentModel.id == document_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
@@ -43,6 +47,7 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[Document], int]:
+        """Return a page of documents matching the given filters, plus the total count."""
         conditions = []
         if status:
             conditions.append(DocumentModel.status == status.value)
@@ -67,9 +72,8 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
 
         return [model_to_document(m) for m in models], total
 
-    async def update_status(
-        self, document_id: UUID, status: DocumentStatus
-    ) -> None:
+    async def update_status(self, document_id: UUID, status: DocumentStatus) -> None:
+        """Update the status of the given document."""
         from datetime import datetime
 
         stmt = (
@@ -85,6 +89,7 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
         parsed_data: ParsedData,
         validation_result: ValidationResult | None = None,
     ) -> None:
+        """Update the parsed data and optional validation result of a document."""
         from datetime import datetime
 
         values = {
@@ -94,16 +99,11 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
         if validation_result:
             values["validation_result"] = validation_result.model_dump()
 
-        stmt = (
-            update(DocumentModel)
-            .where(DocumentModel.id == document_id)
-            .values(**values)
-        )
+        stmt = update(DocumentModel).where(DocumentModel.id == document_id).values(**values)
         await self._session.execute(stmt)
 
-    async def fetch_pending(
-        self, worker_id: str, limit: int = 1
-    ) -> list[Document]:
+    async def fetch_pending(self, worker_id: str, limit: int = 1) -> list[Document]:
+        """Return pending, unlocked documents ordered by creation time."""
         stmt = (
             select(DocumentModel)
             .where(
@@ -118,6 +118,7 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
         return [model_to_document(m) for m in models]
 
     async def release_lock(self, document_id: UUID) -> None:
+        """Clear the lock held on the given document."""
         stmt = (
             update(DocumentModel)
             .where(DocumentModel.id == document_id)

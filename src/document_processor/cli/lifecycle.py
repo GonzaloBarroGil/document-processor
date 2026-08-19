@@ -34,4 +34,5 @@ async def _run_lifecycle() -> None:
 
 
 def main() -> None:
+    """CLI entry point for running the storage lifecycle sweep."""
     asyncio.run(_run_lifecycle())

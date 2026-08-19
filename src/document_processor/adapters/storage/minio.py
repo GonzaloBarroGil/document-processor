@@ -8,6 +8,8 @@ from document_processor.domain.ports.storage import StoragePort
 
 
 class MinioStorage(StoragePort):
+    """MinIO-backed implementation of the storage port."""
+
     def __init__(self) -> None:
         self._client = Minio(
             endpoint=settings.minio_endpoint,
@@ -22,6 +24,7 @@ class MinioStorage(StoragePort):
             self._client.make_bucket(settings.minio_bucket)
 
     async def store(self, key: str, data: bytes, content_type: str) -> None:
+        """Store object bytes under the given key."""
         self._client.put_object(
             bucket_name=settings.minio_bucket,
             object_name=key,
@@ -31,6 +34,7 @@ class MinioStorage(StoragePort):
         )
 
     async def retrieve(self, key: str) -> bytes | None:
+        """Return the object bytes for the given key, or None if absent."""
         try:
             response = self._client.get_object(
                 bucket_name=settings.minio_bucket,
@@ -41,15 +45,15 @@ class MinioStorage(StoragePort):
             return None
 
     async def delete(self, key: str) -> None:
+        """Delete the object stored under the given key."""
         self._client.remove_object(
             bucket_name=settings.minio_bucket,
             object_name=key,
         )
 
     async def usage_pct(self) -> float:
-        objects = self._client.list_objects(
-            bucket_name=settings.minio_bucket, recursive=True
-        )
+        """Return storage usage as a percentage of the configured quota."""
+        objects = self._client.list_objects(bucket_name=settings.minio_bucket, recursive=True)
         total_size = sum(int(obj.size or 0) for obj in objects)
 
         quota_bytes = 10 * 1024 * 1024 * 1024

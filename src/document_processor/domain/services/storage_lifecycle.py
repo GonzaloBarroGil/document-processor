@@ -12,13 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 class StorageLifecycleService:
-    def __init__(
-        self, repository: DocumentRepositoryPort, storage: StoragePort
-    ) -> None:
+    """Expires document images once storage usage exceeds thresholds."""
+
+    def __init__(self, repository: DocumentRepositoryPort, storage: StoragePort) -> None:
         self._repository = repository
         self._storage = storage
 
     async def evaluate(self) -> list[str]:
+        """Check storage usage and expire eligible images, returning expired keys."""
         usage_pct = await self._storage.usage_pct()
         expired_keys: list[str] = []
 
@@ -39,9 +40,7 @@ class StorageLifecycleService:
 
         return expired_keys
 
-    async def _expire_documents(
-        self, days: int, include_failed: bool
-    ) -> list[str]:
+    async def _expire_documents(self, days: int, include_failed: bool) -> list[str]:
         cutoff = datetime.now(UTC) - timedelta(days=days)
         statuses = [DocumentStatus.COMPLETED]
         if include_failed:
@@ -50,16 +49,12 @@ class StorageLifecycleService:
         expired_keys: list[str] = []
 
         for status in statuses:
-            documents, _ = await self._repository.list_documents(
-                status=status, page=1, size=1000
-            )
+            documents, _ = await self._repository.list_documents(status=status, page=1, size=1000)
 
             for doc in documents:
                 if doc.created_at <= cutoff:
                     await self._storage.delete(doc.image_key)
-                    await self._repository.update_status(
-                        doc.id, DocumentStatus.IMAGE_EXPIRED
-                    )
+                    await self._repository.update_status(doc.id, DocumentStatus.IMAGE_EXPIRED)
                     expired_keys.append(doc.image_key)
                     logger.info("Expired image for document %s", doc.id)
 

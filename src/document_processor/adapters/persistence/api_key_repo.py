@@ -6,10 +6,13 @@ from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryP
 
 
 class PostgresApiKeyRepository(ApiKeyRepositoryPort):
+    """PostgreSQL-backed implementation of the API key repository port."""
+
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def validate_key(self, key_hash: str) -> bool:
+        """Return whether the given key hash identifies an active API key."""
         stmt = select(ApiKeyModel).where(
             ApiKeyModel.key_hash == key_hash,
             ApiKeyModel.revoked == False,  # noqa: E712

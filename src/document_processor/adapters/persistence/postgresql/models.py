@@ -19,10 +19,14 @@ from document_processor.domain.models.validation import (
 
 
 class Base(DeclarativeBase):
+    """Declarative base class for SQLAlchemy ORM models."""
+
     pass
 
 
 class DocumentModel(Base):
+    """SQLAlchemy ORM model for persisted documents."""
+
     __tablename__ = "documents"
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
@@ -46,6 +50,8 @@ class DocumentModel(Base):
 
 
 class ApiKeyModel(Base):
+    """SQLAlchemy ORM model for persisted API keys."""
+
     __tablename__ = "api_keys"
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
@@ -60,6 +66,8 @@ class ApiKeyModel(Base):
 
 
 class StorageAlertModel(Base):
+    """SQLAlchemy ORM model for storage usage alerts."""
+
     __tablename__ = "storage_alerts"
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
@@ -73,6 +81,7 @@ class StorageAlertModel(Base):
 
 
 def document_to_model(doc: Document) -> DocumentModel:
+    """Convert a domain Document to its persistence model."""
     return DocumentModel(
         id=doc.id,
         type=doc.type.value,
@@ -89,6 +98,7 @@ def document_to_model(doc: Document) -> DocumentModel:
 
 
 def model_to_document(model: DocumentModel) -> Document:
+    """Convert a persistence model to a domain Document."""
     parsed_data = None
     if model.parsed_data:
         parsed_data = ParsedData(**model.parsed_data)

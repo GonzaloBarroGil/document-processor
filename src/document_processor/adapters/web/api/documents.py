@@ -23,6 +23,7 @@ async def ingest_document(
     region: str = Form(...),
     service: DocumentService = Depends(get_document_service),  # noqa: B008
 ) -> dict[str, str] | JSONResponse:
+    """Ingest an uploaded document and enqueue it for processing."""
     try:
         content = await file.read()
         media_type = file.content_type or "application/octet-stream"
@@ -50,6 +51,7 @@ async def get_document(
     document_id: UUID,
     service: DocumentService = Depends(get_document_service),  # noqa: B008
 ) -> dict[str, Any] | JSONResponse:
+    """Return the document with the given id."""
     try:
         doc = await service.get_document(document_id)
         return doc.model_dump(mode="json")
@@ -66,6 +68,7 @@ async def list_documents(
     size: int = Query(20, ge=1, le=100),
     service: DocumentService = Depends(get_document_service),  # noqa: B008
 ) -> dict[str, Any]:
+    """Return a filtered, paginated list of documents."""
     docs, total = await service.list_documents(
         status=status, type=type, region=region, page=page, size=size
     )
@@ -83,6 +86,7 @@ async def get_document_image(
     document_id: UUID,
     service: DocumentService = Depends(get_document_service),  # noqa: B008
 ) -> Response | JSONResponse:
+    """Return the stored image for the given document."""
     try:
         image_data = await service.get_document_image(document_id)
         return Response(content=image_data, media_type="image/jpeg")

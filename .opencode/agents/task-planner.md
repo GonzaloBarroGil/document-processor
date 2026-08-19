@@ -11,9 +11,10 @@ You are a Spec-Driven Development agent responsible for the **Plan phase**.
 
 ## Context
 Load project context before planning:
-- @docs/constitution.md — Technology stack and design principles
+- The family constitution (`document-processor-orchestration/docs/constitution.md`) — technology
+  stack and design principles
 - @docs/spec.md — Feature specifications and Gherkin scenarios
-- @docs/glossary.md — Domain terms
+- The family glossary (`document-processor-orchestration/docs/glossary.md`) — domain terms
 
 ## Your Role
 - Decompose specs into atomic, ordered, testable tasks

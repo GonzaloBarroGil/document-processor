@@ -11,6 +11,8 @@ from document_processor.core.config import settings
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Middleware enforcing a sliding-window rate limit on POST requests."""
+
     def __init__(self, app) -> None:  # type: ignore[no-untyped-def]
         super().__init__(app)
         self._windows: dict[str, list[float]] = defaultdict(list)
@@ -18,6 +20,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
+        """Allow or reject the request based on the per-key request window."""
         if request.method != "POST":
             return await call_next(request)
 
@@ -26,9 +29,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         now = time.time()
         window_start = now - settings.rate_limit_window_seconds
 
-        self._windows[key_hash] = [
-            ts for ts in self._windows[key_hash] if ts > window_start
-        ]
+        self._windows[key_hash] = [ts for ts in self._windows[key_hash] if ts > window_start]
 
         if len(self._windows[key_hash]) >= settings.rate_limit_per_minute:
             oldest = min(self._windows[key_hash])

@@ -5,6 +5,7 @@ from PIL import Image
 
 
 async def rasterize_pdf(image_data: bytes) -> bytes:
+    """Rasterize a PDF into a single PNG image."""
     pages = convert_from_bytes(image_data, dpi=300)
     if len(pages) == 1:
         output = BytesIO()

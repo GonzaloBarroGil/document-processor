@@ -11,7 +11,8 @@ You are a Spec-Driven Development agent responsible for the **Implementation pha
 
 ## Context
 Load project context before implementing:
-- @docs/constitution.md — Architecture, design principles, quality standards
+- The family constitution (`document-processor-orchestration/docs/constitution.md`) — architecture,
+  design principles, quality standards
 - @docs/plan.md — Task breakdown and dependency order
 - @docs/spec.md — Feature specifications
 - @docs/adr/ — Architecture decision records

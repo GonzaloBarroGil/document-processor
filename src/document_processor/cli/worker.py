@@ -74,4 +74,5 @@ async def _run_worker() -> None:
 
 
 def main() -> None:
+    """CLI entry point for running the OCR processing worker."""
     asyncio.run(_run_worker())

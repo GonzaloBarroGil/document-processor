@@ -10,6 +10,7 @@ from document_processor.core.config import settings
 
 
 def generate_key() -> tuple[str, str, str]:
+    """Generate a new raw API key, its prefix, and SHA-256 hash."""
     raw = "sk-proj-" + secrets.token_urlsafe(32)
     key_hash = hashlib.sha256(raw.encode()).hexdigest()
     prefix = raw[:8]
@@ -17,6 +18,7 @@ def generate_key() -> tuple[str, str, str]:
 
 
 async def create_key(label: str) -> None:
+    """Create and persist a new API key with the given label."""
     engine = create_async_engine(settings.database_url)
     session_factory = async_sessionmaker(engine)
 
@@ -32,6 +34,7 @@ async def create_key(label: str) -> None:
 
 
 async def list_keys() -> None:
+    """List persisted API keys with their revocation status."""
     engine = create_async_engine(settings.database_url)
     session_factory = async_sessionmaker(engine)
 
@@ -48,6 +51,7 @@ async def list_keys() -> None:
 
 
 async def revoke_key(prefix: str) -> None:
+    """Revoke the API key matching the given prefix."""
     engine = create_async_engine(settings.database_url)
     session_factory = async_sessionmaker(engine)
 
@@ -71,6 +75,7 @@ async def revoke_key(prefix: str) -> None:
 
 
 def main() -> None:
+    """CLI entry point for managing API keys."""
     import asyncio
 
     if len(sys.argv) < 2:

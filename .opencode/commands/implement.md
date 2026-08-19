@@ -9,4 +9,5 @@ Follow TDD strictly: write failing test → write code → verify green → refa
 Respect hexagonal architecture, SOLID, and all constitutional constraints.
 One task per invocation. Report results to HITL after each task.
 
-Load context from @docs/constitution.md, @docs/plan.md, and @docs/adr/.
+Load context from the family constitution (`document-processor-orchestration/docs/constitution.md`),
+@docs/plan.md, and @docs/adr/.

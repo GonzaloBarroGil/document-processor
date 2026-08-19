@@ -9,6 +9,8 @@ from document_processor.domain.ports.document_repository import (
 
 
 class PersistOutput:
+    """The result of persisting a document's processing outcome."""
+
     def __init__(self, success: bool) -> None:
         self.success = success
 
@@ -20,6 +22,7 @@ async def persist(
     validation_result: ValidationResult | None,
     status: DocumentStatus,
 ) -> PersistOutput:
+    """Persist parsed data, validation result, and status for a document."""
     await repository.update_parsed_data(
         document_id=document_id,
         parsed_data=parsed_data,

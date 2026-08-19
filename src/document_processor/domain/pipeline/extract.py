@@ -4,6 +4,8 @@ from document_processor.domain.ports.ocr import OCRPort
 
 
 class ExtractOutput:
+    """The text and confidence produced by the OCR step."""
+
     def __init__(self, raw_text: str, confidence: float) -> None:
         self.raw_text = raw_text
         self.confidence = confidence
@@ -15,6 +17,7 @@ async def extract(
     media_type: MediaType,
     confidence_threshold: float,
 ) -> ExtractOutput:
+    """Run OCR on preprocessed image data and enforce a confidence threshold."""
     result = await ocr_port.extract(image_data, media_type)
 
     if result.confidence < confidence_threshold:

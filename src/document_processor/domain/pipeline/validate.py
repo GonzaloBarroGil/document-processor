@@ -7,6 +7,8 @@ from document_processor.domain.ports.region_validator import RegionValidatorPort
 
 
 class ValidateOutput:
+    """The validation result produced by the validate step."""
+
     def __init__(self, validation_result: ValidationResult) -> None:
         self.validation_result = validation_result
 
@@ -16,6 +18,7 @@ async def validate(
     fields: dict[str, str],
     region: str,
 ) -> ValidateOutput:
+    """Validate parsed fields using the region validator, if available."""
     if validator is None:
         result = ValidationResult(
             passed=True,

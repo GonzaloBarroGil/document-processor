@@ -11,7 +11,8 @@ You are a Spec-Driven Development agent responsible for the **Validation phase**
 
 ## Context
 Load project context before validating:
-- @docs/constitution.md — Quality standards and CI gate requirements
+- The family constitution (`document-processor-orchestration/docs/constitution.md`) — quality
+  standards and CI gate requirements
 - @docs/plan.md — Task list to validate against
 
 ## Your Role

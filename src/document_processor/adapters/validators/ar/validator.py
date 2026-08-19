@@ -17,11 +17,15 @@ from document_processor.domain.ports.region_validator import RegionValidatorPort
 
 
 class ArgentinaValidator(RegionValidatorPort):
+    """Region validator applying Argentine fiscal rules (CUIT, AFIP, IVA)."""
+
     @property
     def region_code(self) -> str:
+        """Return the ``AR`` region code."""
         return "AR"
 
     async def validate(self, fields: dict[str, str]) -> ValidationResult:
+        """Validate the parsed fields against Argentine fiscal rules."""
         errors: list[ValidationError] = []
 
         errors.extend(self._validate_cuit(fields))

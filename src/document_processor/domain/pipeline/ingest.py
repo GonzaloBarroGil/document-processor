@@ -11,6 +11,8 @@ from document_processor.domain.models.document import (
 
 
 class IngestInput:
+    """Validated input for the ingest pipeline step."""
+
     def __init__(
         self,
         file_bytes: bytes,
@@ -31,6 +33,8 @@ class IngestInput:
 
 
 class IngestOutput:
+    """The document and storage key produced by the ingest step."""
+
     def __init__(self, document: Document, image_key: str, image_ext: str) -> None:
         self.document = document
         self.image_key = image_key
@@ -38,6 +42,7 @@ class IngestOutput:
 
 
 def media_type_to_ext(media_type: MediaType) -> str:
+    """Return the file extension for the given media type."""
     mapping = {
         MediaType.JPEG: "jpg",
         MediaType.PNG: "png",
@@ -48,6 +53,7 @@ def media_type_to_ext(media_type: MediaType) -> str:
 
 
 def ingest(input_: IngestInput) -> IngestOutput:
+    """Validate and register a new document, returning its metadata."""
     if input_.media_type not in input_.allowed_media_types:
         raise UnsupportedMediaTypeError(input_.media_type.value)
 

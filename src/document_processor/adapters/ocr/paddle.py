@@ -9,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class PaddleOCRAdapter(OCRPort):
+    """PaddleOCR-backed adapter for extracting text from document images."""
+
     async def extract(self, image_data: bytes, media_type: MediaType) -> OCRResult:
+        """Extract text and confidence from an image using PaddleOCR."""
         try:
             import numpy as np
             from PIL import Image

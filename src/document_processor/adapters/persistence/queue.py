@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 async def poll_queue(
     session_factory, worker_id: str, process_fn, stop_event: asyncio.Event
 ) -> None:
+    """Continuously claim and process pending documents until the stop event is set."""
     while not stop_event.is_set():
         async with session_factory() as session:
             try:

@@ -132,8 +132,8 @@ See `src/document_processor/core/config.py` for full defaults.
 
 ## Documentation
 
-- [Constitution](docs/constitution.md) — Governing principles and non-negotiables
+- [Constitution](docs/constitution.md) — points to the family constitution (governance hub)
 - [Specification](docs/spec.md) — 9 features, 31 Gherkin scenarios
-- [Glossary](docs/glossary.md) — Domain ubiquitous language
+- [Glossary](docs/glossary.md) — points to the family glossary (governance hub)
 - [Implementation Plan](docs/plan.md) — 37 tasks, component diagrams, data model
 - [Architecture Decision Records](docs/adr/) — 10 ADRs

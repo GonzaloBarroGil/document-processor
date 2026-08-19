@@ -5,6 +5,7 @@ from document_processor.core.config import settings
 
 
 def setup_logging() -> None:
+    """Configure the root logger with a stream handler and level from settings."""
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(
         logging.Formatter(
