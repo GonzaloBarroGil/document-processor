@@ -71,7 +71,7 @@ class DocumentModel(Base):
         PGUUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    edited_fields: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    edited_fields: Mapped[dict[str, str] | None] = mapped_column(JSONB, nullable=True)
 
 
 class ApiKeyModel(Base):
@@ -197,9 +197,14 @@ def document_to_model(doc: Document) -> DocumentModel:
         status=doc.status.value,
         media_type=doc.media_type.value,
         image_key=doc.image_key,
+        user_id=doc.user_id,
         parsed_data=doc.parsed_data.model_dump() if doc.parsed_data else None,
         validation_result=doc.validation_result.model_dump() if doc.validation_result else None,
         error_detail=doc.error_detail,
+        reviewed=doc.reviewed,
+        reviewed_by=doc.reviewed_by,
+        reviewed_at=doc.reviewed_at,
+        edited_fields=doc.edited_fields,
         created_at=doc.created_at,
         updated_at=doc.updated_at,
     )
@@ -222,9 +227,14 @@ def model_to_document(model: DocumentModel) -> Document:
         status=DocumentStatus(model.status),
         media_type=MediaType(model.media_type),
         image_key=model.image_key,
+        user_id=model.user_id,
         parsed_data=parsed_data,
         validation_result=validation_result,
         error_detail=model.error_detail,
+        reviewed=model.reviewed,
+        reviewed_by=model.reviewed_by,
+        reviewed_at=model.reviewed_at,
+        edited_fields=model.edited_fields,
         created_at=model.created_at,
         updated_at=model.updated_at,
     )

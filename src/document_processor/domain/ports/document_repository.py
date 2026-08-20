@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from uuid import UUID
 
 from document_processor.domain.models.document import Document, DocumentStatus
@@ -54,4 +55,22 @@ class DocumentRepositoryPort(ABC):
     @abstractmethod
     async def release_lock(self, document_id: UUID) -> None:
         """Release the lock held on the given document."""
+        ...
+
+    @abstractmethod
+    async def update_review(
+        self,
+        document_id: UUID,
+        reviewed: bool,
+        reviewed_by: UUID | None,
+        reviewed_at: datetime | None,
+        edited_fields: dict[str, str] | None,
+        status: DocumentStatus | None = None,
+    ) -> None:
+        """Update the review state (and optional status) of the given document."""
+        ...
+
+    @abstractmethod
+    async def list_review_queue(self, page: int = 1, size: int = 20) -> tuple[list[Document], int]:
+        """Return a page of documents awaiting review, plus the total count."""
         ...

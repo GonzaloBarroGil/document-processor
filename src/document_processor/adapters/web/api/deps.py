@@ -6,9 +6,11 @@ from document_processor.core.errors import AuthenticationError
 from document_processor.domain.models.user import User, UserRole
 from document_processor.domain.services.auth_service import AuthService
 from document_processor.domain.services.document_service import DocumentService
+from document_processor.domain.services.review_service import ReviewService
 
 _document_service: DocumentService | None = None
 _auth_service: AuthService | None = None
+_review_service: ReviewService | None = None
 
 
 def set_document_service(service: DocumentService) -> None:
@@ -33,6 +35,18 @@ def get_auth_service() -> AuthService:
     """Return the application-wide AuthService instance."""
     assert _auth_service is not None, "AuthService not initialized"
     return _auth_service
+
+
+def set_review_service(service: ReviewService) -> None:
+    """Set the application-wide ReviewService instance."""
+    global _review_service
+    _review_service = service
+
+
+def get_review_service() -> ReviewService:
+    """Return the application-wide ReviewService instance."""
+    assert _review_service is not None, "ReviewService not initialized"
+    return _review_service
 
 
 async def get_current_user(

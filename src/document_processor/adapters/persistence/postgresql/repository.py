@@ -1,4 +1,4 @@
-from datetime import UTC
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import func, select, update
@@ -74,8 +74,6 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
 
     async def update_status(self, document_id: UUID, status: DocumentStatus) -> None:
         """Update the status of the given document."""
-        from datetime import datetime
-
         stmt = (
             update(DocumentModel)
             .where(DocumentModel.id == document_id)
@@ -90,8 +88,6 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
         validation_result: ValidationResult | None = None,
     ) -> None:
         """Update the parsed data and optional validation result of a document."""
-        from datetime import datetime
-
         values = {
             "parsed_data": parsed_data.model_dump(),
             "updated_at": datetime.now(UTC),
@@ -125,3 +121,51 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
             .values(locked_by=None, locked_at=None)
         )
         await self._session.execute(stmt)
+
+    async def update_review(
+        self,
+        document_id: UUID,
+        reviewed: bool,
+        reviewed_by: UUID | None,
+        reviewed_at: datetime | None,
+        edited_fields: dict[str, str] | None,
+        status: DocumentStatus | None = None,
+    ) -> None:
+        """Update the review state (and optional status) of the given document."""
+        values: dict[str, object] = {
+            "reviewed": reviewed,
+            "reviewed_by": reviewed_by,
+            "reviewed_at": reviewed_at,
+            "edited_fields": edited_fields,
+            "updated_at": datetime.now(UTC),
+        }
+        if status is not None:
+            values["status"] = status.value
+
+        stmt = update(DocumentModel).where(DocumentModel.id == document_id).values(**values)
+        await self._session.execute(stmt)
+
+    async def list_review_queue(self, page: int = 1, size: int = 20) -> tuple[list[Document], int]:
+        """Return a page of documents awaiting review, plus the total count."""
+        conditions = [
+            DocumentModel.reviewed == False,  # noqa: E712
+            DocumentModel.status.in_(
+                [DocumentStatus.COMPLETED.value, DocumentStatus.VALIDATION_FAILED.value]
+            ),
+        ]
+
+        count_stmt = select(func.count()).select_from(DocumentModel).where(*conditions)
+        total_result = await self._session.execute(count_stmt)
+        total = total_result.scalar_one()
+
+        stmt = (
+            select(DocumentModel)
+            .where(*conditions)
+            .order_by(DocumentModel.created_at.desc())
+            .offset((page - 1) * size)
+            .limit(size)
+        )
+        result = await self._session.execute(stmt)
+        models = result.scalars().all()
+
+        return [model_to_document(m) for m in models], total

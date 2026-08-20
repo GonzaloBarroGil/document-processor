@@ -37,6 +37,14 @@ class MediaType(StrEnum):
     PDF = "application/pdf"
 
 
+class ReviewAction(StrEnum):
+    """A human review decision on a document."""
+
+    APPROVE = "approve"
+    REJECT = "reject"
+    REQUEST_CHANGES = "request_changes"
+
+
 class Document(BaseModel):
     """A document ingested for OCR processing and validation."""
 
@@ -46,8 +54,13 @@ class Document(BaseModel):
     status: DocumentStatus
     media_type: MediaType
     image_key: str
+    user_id: UUID | None = None
     parsed_data: ParsedData | None = None
     validation_result: ValidationResult | None = None
     error_detail: str | None = None
+    reviewed: bool = False
+    reviewed_by: UUID | None = None
+    reviewed_at: datetime | None = None
+    edited_fields: dict[str, str] | None = None
     created_at: datetime
     updated_at: datetime

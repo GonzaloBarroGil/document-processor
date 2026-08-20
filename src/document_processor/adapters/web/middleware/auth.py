@@ -23,6 +23,14 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     BEARER_PATHS = {"/api/v1/auth/me", "/api/v1/auth/logout"}
 
+    @staticmethod
+    def _is_bearer_only(path: str) -> bool:
+        if path in AuthMiddleware.BEARER_PATHS:
+            return True
+        if path.startswith("/api/v1/review"):
+            return True
+        return path.startswith("/api/v1/documents/") and path.endswith("/review")
+
     def __init__(
         self,
         app: ASGIApp,
@@ -36,7 +44,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         """Authenticate the request via X-API-Key, or defer Bearer paths to the endpoint."""
         path = request.url.path
-        if path in self.PUBLIC_PATHS or path in self.BEARER_PATHS:
+        if path in self.PUBLIC_PATHS or self._is_bearer_only(path):
             return await call_next(request)
 
         api_key = request.headers.get("X-API-Key")

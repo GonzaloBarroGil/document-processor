@@ -81,9 +81,7 @@ class TestPostgresDocumentRepository:
         doc = _make_domain_doc()
         model = document_to_model(doc)
         session.execute = AsyncMock(
-            return_value=MagicMock(
-                scalar_one_or_none=MagicMock(return_value=model)
-            )
+            return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=model))
         )
 
         result = await repo.get_by_id(doc.id)
@@ -95,9 +93,7 @@ class TestPostgresDocumentRepository:
         self, repo: PostgresDocumentRepository, session: MagicMock
     ) -> None:
         session.execute = AsyncMock(
-            return_value=MagicMock(
-                scalar_one_or_none=MagicMock(return_value=None)
-            )
+            return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=None))
         )
 
         result = await repo.get_by_id(UUID("00000000-0000-0000-0000-000000000001"))
@@ -119,7 +115,9 @@ class TestPostgresDocumentRepository:
         doc_id = uuid4()
         parsed = ParsedData(raw_text="test", confidence=0.9, fields={})
         validation = ValidationResult(
-            passed=True, errors=[], region="AR",
+            passed=True,
+            errors=[],
+            region="AR",
             validated_at=datetime.now(UTC),
         )
         session.execute = AsyncMock()
@@ -127,3 +125,34 @@ class TestPostgresDocumentRepository:
         await repo.update_parsed_data(doc_id, parsed, validation)
 
         session.execute.assert_called_once()
+
+    async def test_update_review(
+        self, repo: PostgresDocumentRepository, session: MagicMock
+    ) -> None:
+        doc_id = uuid4()
+        session.execute = AsyncMock()
+
+        await repo.update_review(
+            document_id=doc_id,
+            reviewed=True,
+            reviewed_by=uuid4(),
+            reviewed_at=datetime.now(UTC),
+            edited_fields={"total": "100"},
+            status=DocumentStatus.COMPLETED,
+        )
+
+        session.execute.assert_called_once()
+
+    async def test_list_review_queue(
+        self, repo: PostgresDocumentRepository, session: MagicMock
+    ) -> None:
+        count_result = MagicMock()
+        count_result.scalar_one = MagicMock(return_value=2)
+        list_result = MagicMock()
+        list_result.scalars = MagicMock(return_value=MagicMock(all=MagicMock(return_value=[])))
+        session.execute = AsyncMock(side_effect=[count_result, list_result])
+
+        docs, total = await repo.list_review_queue(page=1, size=10)
+
+        assert total == 2
+        assert docs == []
