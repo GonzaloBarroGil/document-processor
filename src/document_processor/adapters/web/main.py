@@ -51,7 +51,6 @@ def create_app(
         set_export_service(export_service)
         app.include_router(export.router)
 
-    if quota_service is not None:
-        set_quota_service(quota_service)
+    set_quota_service(quota_service)
 
     return app

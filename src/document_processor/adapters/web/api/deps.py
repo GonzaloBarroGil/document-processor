@@ -65,7 +65,7 @@ def get_export_service() -> ExportService:
     return _export_service
 
 
-def set_quota_service(service: QuotaService) -> None:
+def set_quota_service(service: QuotaService | None) -> None:
     """Set the application-wide QuotaService instance."""
     global _quota_service
     _quota_service = service
