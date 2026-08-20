@@ -12,7 +12,16 @@ from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryP
 class AuthMiddleware(BaseHTTPMiddleware):
     """Middleware enforcing API key authentication on protected routes."""
 
-    PUBLIC_PATHS = {"/api/v1/health", "/openapi.json", "/docs", "/redoc"}
+    PUBLIC_PATHS = {
+        "/api/v1/health",
+        "/api/v1/auth/login",
+        "/api/v1/auth/refresh",
+        "/openapi.json",
+        "/docs",
+        "/redoc",
+    }
+
+    BEARER_PATHS = {"/api/v1/auth/me", "/api/v1/auth/logout"}
 
     def __init__(
         self,
@@ -25,8 +34,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
-        """Authenticate the request via the X-API-Key header or reject it."""
-        if request.url.path in self.PUBLIC_PATHS:
+        """Authenticate the request via X-API-Key, or defer Bearer paths to the endpoint."""
+        path = request.url.path
+        if path in self.PUBLIC_PATHS or path in self.BEARER_PATHS:
             return await call_next(request)
 
         api_key = request.headers.get("X-API-Key")

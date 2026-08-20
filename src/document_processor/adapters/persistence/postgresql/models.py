@@ -25,6 +25,7 @@ from document_processor.domain.models.document import (
     MediaType,
 )
 from document_processor.domain.models.parsed_data import ParsedData
+from document_processor.domain.models.user import User, UserRole
 from document_processor.domain.models.validation import (
     ValidationResult,
 )
@@ -224,6 +225,30 @@ def model_to_document(model: DocumentModel) -> Document:
         parsed_data=parsed_data,
         validation_result=validation_result,
         error_detail=model.error_detail,
+        created_at=model.created_at,
+        updated_at=model.updated_at,
+    )
+
+
+def user_to_model(user: User) -> UserModel:
+    """Convert a domain User to its persistence model."""
+    return UserModel(
+        id=user.id,
+        username=user.username,
+        password_hash=user.password_hash,
+        role=user.role.value,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+    )
+
+
+def model_to_user(model: UserModel) -> User:
+    """Convert a persistence model to a domain User."""
+    return User(
+        id=model.id,
+        username=model.username,
+        password_hash=model.password_hash,
+        role=UserRole(model.role),
         created_at=model.created_at,
         updated_at=model.updated_at,
     )

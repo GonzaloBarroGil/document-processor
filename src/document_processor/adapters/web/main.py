@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 
-from document_processor.adapters.web.api import documents, health
-from document_processor.adapters.web.api.deps import set_document_service
+from document_processor.adapters.web.api import auth, documents, health
+from document_processor.adapters.web.api.deps import set_auth_service, set_document_service
 from document_processor.adapters.web.middleware.auth import AuthMiddleware
 from document_processor.adapters.web.middleware.rate_limit import RateLimitMiddleware
 from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
 from document_processor.domain.ports.region_validator import RegionValidatorPort
+from document_processor.domain.services.auth_service import AuthService
 from document_processor.domain.services.document_service import DocumentService
 
 
@@ -13,6 +14,7 @@ def create_app(
     document_service: DocumentService,
     api_key_repository: ApiKeyRepositoryPort,
     validator_registry: dict[str, RegionValidatorPort],
+    auth_service: AuthService | None = None,
 ) -> FastAPI:
     """Create and configure the FastAPI application."""
     set_document_service(document_service)
@@ -24,5 +26,9 @@ def create_app(
 
     app.include_router(documents.router)
     app.include_router(health.router)
+
+    if auth_service is not None:
+        set_auth_service(auth_service)
+        app.include_router(auth.router)
 
     return app

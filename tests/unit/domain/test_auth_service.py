@@ -116,3 +116,40 @@ class TestAuthService:
 
         with pytest.raises(InvalidTokenError):
             await service.refresh(pair.refresh_token)
+
+    async def test_current_user_returns_user(self, service: AuthService, users: MagicMock) -> None:
+        user = _make_user()
+        users.get_user_by_id = AsyncMock(return_value=user)
+        token = TokenService().issue_access_token(user.id, user.role)
+
+        result = await service.current_user(token)
+
+        assert result.id == user.id
+        assert result.username == user.username
+
+    async def test_current_user_unknown_raises(
+        self, service: AuthService, users: MagicMock
+    ) -> None:
+        users.get_user_by_id = AsyncMock(return_value=None)
+        token = TokenService().issue_access_token(uuid4(), UserRole.REVIEWER)
+
+        with pytest.raises(InvalidTokenError):
+            await service.current_user(token)
+
+    async def test_logout_revokes_supplied_token(
+        self, service: AuthService, refresh_repo: MagicMock
+    ) -> None:
+        refresh_repo.revoke = AsyncMock()
+
+        await service.logout("some-refresh-token")
+
+        refresh_repo.revoke.assert_called_once_with(TokenService.hash_token("some-refresh-token"))
+
+    async def test_logout_without_token_is_noop(
+        self, service: AuthService, refresh_repo: MagicMock
+    ) -> None:
+        refresh_repo.revoke = AsyncMock()
+
+        await service.logout(None)
+
+        refresh_repo.revoke.assert_not_called()

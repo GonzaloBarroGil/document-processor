@@ -45,6 +45,20 @@ class AuthService:
         await self._refresh_token_repository.revoke(token_hash)
         return await self._issue_pair(user)
 
+    async def current_user(self, access_token: str) -> User:
+        """Return the user identified by a valid access token."""
+        payload = self._tokens.decode(access_token, TokenType.ACCESS)
+        user = await self._user_repository.get_user_by_id(payload.subject)
+        if user is None:
+            raise InvalidTokenError
+        return user
+
+    async def logout(self, refresh_token: str | None) -> None:
+        """Revoke the given refresh token, if one is supplied."""
+        if refresh_token is None:
+            return
+        await self._refresh_token_repository.revoke(self._tokens.hash_token(refresh_token))
+
     async def _issue_pair(self, user: User) -> TokenPair:
         access_token = self._tokens.issue_access_token(user.id, user.role)
         refresh = self._tokens.issue_refresh_token(user.id, user.role)
