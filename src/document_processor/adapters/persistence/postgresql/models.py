@@ -198,8 +198,10 @@ def document_to_model(doc: Document) -> DocumentModel:
         media_type=doc.media_type.value,
         image_key=doc.image_key,
         user_id=doc.user_id,
-        parsed_data=doc.parsed_data.model_dump() if doc.parsed_data else None,
-        validation_result=doc.validation_result.model_dump() if doc.validation_result else None,
+        parsed_data=doc.parsed_data.model_dump(mode="json") if doc.parsed_data else None,
+        validation_result=(
+            doc.validation_result.model_dump(mode="json") if doc.validation_result else None
+        ),
         error_detail=doc.error_detail,
         reviewed=doc.reviewed,
         reviewed_by=doc.reviewed_by,

@@ -7,6 +7,9 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from document_processor.adapters.ocr.easyocr import EasyOCRAdapter
 from document_processor.adapters.ocr.paddle import PaddleOCRAdapter
+from document_processor.adapters.persistence.postgresql.daily_usage_repository import (
+    PostgresDailyUsageRepository,
+)
 from document_processor.adapters.persistence.postgresql.models import (
     DocumentModel,
     model_to_document,
@@ -20,6 +23,7 @@ from document_processor.adapters.validators.registry import ValidatorRegistry
 from document_processor.core.config import settings
 from document_processor.core.logging import setup_logging
 from document_processor.domain.services.document_service import DocumentService
+from document_processor.domain.services.quota_service import QuotaService
 
 logger = logging.getLogger(__name__)
 
@@ -63,11 +67,17 @@ async def _run_worker() -> None:
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, _signal_handler)
 
+    async def _global_quota_exceeded() -> bool:
+        async with session_factory() as session:
+            quota = QuotaService(PostgresDailyUsageRepository(session))
+            return await quota.is_exceeded("global")
+
     await poll_queue(
         session_factory,
         worker_id,
         lambda doc: _process_document(service, doc),
         stop_event,
+        quota_check=_global_quota_exceeded,
     )
 
     logger.info("Worker %s stopped", worker_id)

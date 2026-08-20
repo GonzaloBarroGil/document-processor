@@ -1,17 +1,25 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, Query, UploadFile
 from starlette.responses import JSONResponse, Response
 
-from document_processor.adapters.web.api.deps import get_document_service
+from document_processor.adapters.web.api.deps import (
+    get_document_service,
+    get_quota_service,
+)
 from document_processor.core.errors import (
+    DailyQuotaExceededError,
     DocumentNotFoundError,
     FileTooLargeError,
     ImageExpiredError,
     UnsupportedMediaTypeError,
 )
 from document_processor.domain.services.document_service import DocumentService
+from document_processor.domain.services.quota_service import (
+    QuotaService,
+    seconds_until_midnight_utc,
+)
 
 router = APIRouter(prefix="/api/v1/documents", tags=["documents"])
 
@@ -21,9 +29,23 @@ async def ingest_document(
     file: UploadFile = File(...),  # noqa: B008
     type: str = Form(...),
     region: str = Form(...),
+    x_api_key: str | None = Header(default=None),
     service: DocumentService = Depends(get_document_service),  # noqa: B008
+    quota: QuotaService | None = Depends(get_quota_service),  # noqa: B008
 ) -> dict[str, str] | JSONResponse:
     """Ingest an uploaded document and enqueue it for processing."""
+    try:
+        if quota is not None:
+            if x_api_key:
+                await quota.check_and_increment(f"key:{x_api_key[:8]}")
+            await quota.check_and_increment("global")
+    except DailyQuotaExceededError as e:
+        return JSONResponse(
+            status_code=429,
+            content={"detail": str(e)},
+            headers={"Retry-After": str(seconds_until_midnight_utc())},
+        )
+
     try:
         content = await file.read()
         media_type = file.content_type or "application/octet-stream"

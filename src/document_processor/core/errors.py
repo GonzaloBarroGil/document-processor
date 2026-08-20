@@ -103,3 +103,12 @@ class InvalidTokenError(AuthenticationError):
     """Raised when a JWT is missing, expired, malformed, or otherwise invalid."""
 
     pass
+
+
+class DailyQuotaExceededError(DocumentProcessorError):
+    """Raised when the daily ingestion quota for a scope has been exceeded."""
+
+    def __init__(self, scope: str, cap: int) -> None:
+        self.scope = scope
+        self.cap = cap
+        super().__init__(f"Daily quota exceeded ({scope}): {cap} documents/day")

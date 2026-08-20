@@ -30,6 +30,7 @@ class Settings(BaseSettings):
 
     rate_limit_per_minute: int = 60
     rate_limit_window_seconds: int = 60
+    daily_document_cap: int = 100
 
     storage_high_watermark_pct: float = 85.0
     storage_critical_pct: float = 95.0

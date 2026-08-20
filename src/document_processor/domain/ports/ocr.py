@@ -14,6 +14,8 @@ class OCRResult:
 class OCRPort(ABC):
     """Port for extracting text from document images."""
 
+    provider: str = "unknown"
+
     @abstractmethod
     async def extract(self, image_data: bytes, media_type: MediaType) -> OCRResult:
         """Extract text and confidence from the given image data."""

@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 
 from document_processor.core.errors import DocumentNotFoundError
+from document_processor.domain.models.audit import AuditAction
 from document_processor.domain.models.document import (
     Document,
     DocumentStatus,
@@ -89,3 +90,20 @@ class TestReviewService:
 
         assert docs == []
         assert total == 0
+
+    async def test_review_records_audit(self, repo: MagicMock) -> None:
+        audit = MagicMock()
+        audit.record = AsyncMock()
+        service = ReviewService(repository=repo, audit=audit)
+
+        doc = _make_document()
+        reviewer_id = uuid4()
+        repo.get_by_id = AsyncMock(side_effect=[doc, doc])
+        repo.update_review = AsyncMock()
+
+        await service.review(doc.id, reviewer_id, ReviewAction.APPROVE)
+
+        audit.record.assert_called_once()
+        call = audit.record.call_args
+        assert call.kwargs["action"] == AuditAction.REVIEW_APPROVE
+        assert call.kwargs["user_id"] == reviewer_id

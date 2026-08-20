@@ -89,11 +89,11 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
     ) -> None:
         """Update the parsed data and optional validation result of a document."""
         values = {
-            "parsed_data": parsed_data.model_dump(),
+            "parsed_data": parsed_data.model_dump(mode="json"),
             "updated_at": datetime.now(UTC),
         }
         if validation_result:
-            values["validation_result"] = validation_result.model_dump()
+            values["validation_result"] = validation_result.model_dump(mode="json")
 
         stmt = update(DocumentModel).where(DocumentModel.id == document_id).values(**values)
         await self._session.execute(stmt)

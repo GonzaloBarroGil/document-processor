@@ -8,6 +8,7 @@ from document_processor.core.errors import (
     OCRFailureError,
     UnsupportedMediaTypeError,
 )
+from document_processor.domain.models.audit import AuditAction
 from document_processor.domain.models.document import (
     Document,
     DocumentStatus,
@@ -20,9 +21,11 @@ from document_processor.domain.pipeline.parse import parse
 from document_processor.domain.pipeline.persist import persist
 from document_processor.domain.pipeline.preprocess import preprocess
 from document_processor.domain.pipeline.validate import validate as validate_step
+from document_processor.domain.ports.audit import AuditPort
 from document_processor.domain.ports.document_repository import (
     DocumentRepositoryPort,
 )
+from document_processor.domain.ports.failed_extraction import FailedExtractionPort
 from document_processor.domain.ports.ocr import OCRPort
 from document_processor.domain.ports.region_validator import RegionValidatorPort
 from document_processor.domain.ports.storage import StoragePort
@@ -39,11 +42,15 @@ class DocumentService:
         storage: StoragePort,
         ocr: OCRPort,
         validator_registry: dict[str, RegionValidatorPort],
+        audit: AuditPort | None = None,
+        failed_extraction: FailedExtractionPort | None = None,
     ) -> None:
         self._repository = repository
         self._storage = storage
         self._ocr = ocr
         self._validator_registry = validator_registry
+        self._audit = audit
+        self._failed_extraction = failed_extraction
 
     async def ingest_document(
         self,
@@ -135,12 +142,30 @@ class DocumentService:
                 settings.ocr_confidence_threshold,
             )
 
+            if self._audit is not None:
+                await self._audit.record(
+                    document_id=document.id,
+                    user_id=None,
+                    provider=self._ocr.provider,
+                    confidence=extracted.confidence,
+                    action=AuditAction.OCR,
+                )
+
             parsed = parse(extracted.raw_text, extracted.confidence)
 
             await self._repository.update_status(document.id, DocumentStatus.VALIDATING)
 
             validator = self._validator_registry.get(document.region)
             validated = await validate_step(validator, parsed.parsed_data.fields, document.region)
+
+            if self._audit is not None:
+                await self._audit.record(
+                    document_id=document.id,
+                    user_id=None,
+                    provider=self._ocr.provider,
+                    confidence=extracted.confidence,
+                    action=AuditAction.VALIDATE,
+                )
 
             status = (
                 DocumentStatus.COMPLETED
@@ -158,4 +183,6 @@ class DocumentService:
 
         except OCRFailureError as e:
             logger.error("OCR failed for document %s: %s", document.id, e.detail)
+            if self._failed_extraction is not None:
+                await self._failed_extraction.record_failure(document.id, e.detail)
             await self._repository.update_status(document.id, DocumentStatus.OCR_FAILED)

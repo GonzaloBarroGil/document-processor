@@ -6,11 +6,15 @@ from document_processor.core.errors import AuthenticationError
 from document_processor.domain.models.user import User, UserRole
 from document_processor.domain.services.auth_service import AuthService
 from document_processor.domain.services.document_service import DocumentService
+from document_processor.domain.services.export_service import ExportService
+from document_processor.domain.services.quota_service import QuotaService
 from document_processor.domain.services.review_service import ReviewService
 
 _document_service: DocumentService | None = None
 _auth_service: AuthService | None = None
 _review_service: ReviewService | None = None
+_export_service: ExportService | None = None
+_quota_service: QuotaService | None = None
 
 
 def set_document_service(service: DocumentService) -> None:
@@ -47,6 +51,29 @@ def get_review_service() -> ReviewService:
     """Return the application-wide ReviewService instance."""
     assert _review_service is not None, "ReviewService not initialized"
     return _review_service
+
+
+def set_export_service(service: ExportService) -> None:
+    """Set the application-wide ExportService instance."""
+    global _export_service
+    _export_service = service
+
+
+def get_export_service() -> ExportService:
+    """Return the application-wide ExportService instance."""
+    assert _export_service is not None, "ExportService not initialized"
+    return _export_service
+
+
+def set_quota_service(service: QuotaService) -> None:
+    """Set the application-wide QuotaService instance."""
+    global _quota_service
+    _quota_service = service
+
+
+def get_quota_service() -> QuotaService | None:
+    """Return the application-wide QuotaService instance, or None if not configured."""
+    return _quota_service
 
 
 async def get_current_user(

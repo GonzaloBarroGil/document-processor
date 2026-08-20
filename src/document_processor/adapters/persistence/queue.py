@@ -18,9 +18,14 @@ async def poll_queue(
     worker_id: str,
     process_fn: Callable[[DocumentModel], Awaitable[None]],
     stop_event: asyncio.Event,
+    quota_check: Callable[[], Awaitable[bool]] | None = None,
 ) -> None:
     """Continuously claim and process pending documents until the stop event is set."""
     while not stop_event.is_set():
+        if quota_check is not None and await quota_check():
+            await asyncio.sleep(settings.worker_poll_interval_seconds)
+            continue
+
         async with session_factory() as session:
             try:
                 doc = await _claim_pending(session, worker_id)
