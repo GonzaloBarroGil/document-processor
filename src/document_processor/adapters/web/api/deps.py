@@ -1,7 +1,9 @@
+from collections.abc import Awaitable, Callable
+
 from fastapi import Depends, Header, HTTPException
 
 from document_processor.core.errors import AuthenticationError
-from document_processor.domain.models.user import User
+from document_processor.domain.models.user import User, UserRole
 from document_processor.domain.services.auth_service import AuthService
 from document_processor.domain.services.document_service import DocumentService
 
@@ -46,3 +48,18 @@ async def get_current_user(
         return await auth_service.current_user(token)
     except AuthenticationError as e:
         raise HTTPException(status_code=401, detail="Missing or invalid credentials") from e
+
+
+def require_roles(*roles: UserRole) -> Callable[..., Awaitable[User]]:
+    """Return a dependency requiring the current user to hold one of the given roles."""
+
+    async def _require_role(user: User = Depends(get_current_user)) -> User:  # noqa: B008
+        if user.role not in roles:
+            raise HTTPException(status_code=403, detail="Insufficient role")
+        return user
+
+    return _require_role
+
+
+require_admin = require_roles(UserRole.ADMIN)
+require_reviewer = require_roles(UserRole.ADMIN, UserRole.REVIEWER)
