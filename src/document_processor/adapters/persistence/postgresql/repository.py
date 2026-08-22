@@ -169,3 +169,12 @@ class PostgresDocumentRepository(DocumentRepositoryPort):
         models = result.scalars().all()
 
         return [model_to_document(m) for m in models], total
+
+    async def count_by_status(self) -> dict[str, int]:
+        """Return document counts grouped by status."""
+        stmt = select(DocumentModel.status, func.count()).group_by(DocumentModel.status)
+        result = await self._session.execute(stmt)
+        counts: dict[str, int] = {}
+        for status, count in result.all():
+            counts[status] = count
+        return counts

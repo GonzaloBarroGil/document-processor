@@ -74,3 +74,8 @@ class DocumentRepositoryPort(ABC):
     async def list_review_queue(self, page: int = 1, size: int = 20) -> tuple[list[Document], int]:
         """Return a page of documents awaiting review, plus the total count."""
         ...
+
+    @abstractmethod
+    async def count_by_status(self) -> dict[str, int]:
+        """Return document counts grouped by status."""
+        ...

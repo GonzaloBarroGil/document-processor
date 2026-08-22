@@ -6,6 +6,7 @@ from document_processor.core.errors import AuthenticationError
 from document_processor.domain.models.user import User, UserRole
 from document_processor.domain.services.api_key_service import ApiKeyService
 from document_processor.domain.services.auth_service import AuthService
+from document_processor.domain.services.dashboard_service import DashboardService
 from document_processor.domain.services.document_service import DocumentService
 from document_processor.domain.services.export_service import ExportService
 from document_processor.domain.services.quota_service import QuotaService
@@ -17,6 +18,7 @@ _review_service: ReviewService | None = None
 _export_service: ExportService | None = None
 _quota_service: QuotaService | None = None
 _api_key_service: ApiKeyService | None = None
+_dashboard_service: DashboardService | None = None
 
 
 def set_document_service(service: DocumentService) -> None:
@@ -93,6 +95,18 @@ def get_api_key_service() -> ApiKeyService:
     """Return the application-wide ApiKeyService instance."""
     assert _api_key_service is not None, "ApiKeyService not initialized"
     return _api_key_service
+
+
+def set_dashboard_service(service: DashboardService) -> None:
+    """Set the application-wide DashboardService instance."""
+    global _dashboard_service
+    _dashboard_service = service
+
+
+def get_dashboard_service() -> DashboardService:
+    """Return the application-wide DashboardService instance."""
+    assert _dashboard_service is not None, "DashboardService not initialized"
+    return _dashboard_service
 
 
 async def get_current_user(

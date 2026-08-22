@@ -156,3 +156,14 @@ class TestPostgresDocumentRepository:
 
         assert total == 2
         assert docs == []
+
+    async def test_count_by_status(
+        self, repo: PostgresDocumentRepository, session: MagicMock
+    ) -> None:
+        session.execute = AsyncMock(
+            return_value=MagicMock(all=MagicMock(return_value=[("COMPLETED", 5), ("PENDING", 2)]))
+        )
+
+        counts = await repo.count_by_status()
+
+        assert counts == {"COMPLETED": 5, "PENDING": 2}

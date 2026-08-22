@@ -31,6 +31,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return True
         if path.startswith("/api/v1/api-keys"):
             return True
+        if path.startswith("/api/v1/dashboard"):
+            return True
         return path.startswith("/api/v1/documents/") and path.endswith("/review")
 
     def __init__(
