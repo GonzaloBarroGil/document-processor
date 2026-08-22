@@ -112,3 +112,11 @@ class DailyQuotaExceededError(DocumentProcessorError):
         self.scope = scope
         self.cap = cap
         super().__init__(f"Daily quota exceeded ({scope}): {cap} documents/day")
+
+
+class ApiKeyNotFoundError(DocumentProcessorError):
+    """Raised when an API key with the given prefix does not exist."""
+
+    def __init__(self, prefix: str) -> None:
+        self.prefix = prefix
+        super().__init__(f"API key not found: {prefix}")

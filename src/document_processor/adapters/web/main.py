@@ -1,7 +1,15 @@
 from fastapi import FastAPI
 
-from document_processor.adapters.web.api import auth, documents, export, health, review
+from document_processor.adapters.web.api import (
+    api_keys,
+    auth,
+    documents,
+    export,
+    health,
+    review,
+)
 from document_processor.adapters.web.api.deps import (
+    set_api_key_service,
     set_auth_service,
     set_document_service,
     set_export_service,
@@ -12,6 +20,7 @@ from document_processor.adapters.web.middleware.auth import AuthMiddleware
 from document_processor.adapters.web.middleware.rate_limit import RateLimitMiddleware
 from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
 from document_processor.domain.ports.region_validator import RegionValidatorPort
+from document_processor.domain.services.api_key_service import ApiKeyService
 from document_processor.domain.services.auth_service import AuthService
 from document_processor.domain.services.document_service import DocumentService
 from document_processor.domain.services.export_service import ExportService
@@ -27,6 +36,7 @@ def create_app(
     review_service: ReviewService | None = None,
     export_service: ExportService | None = None,
     quota_service: QuotaService | None = None,
+    api_key_service: ApiKeyService | None = None,
 ) -> FastAPI:
     """Create and configure the FastAPI application."""
     set_document_service(document_service)
@@ -50,6 +60,10 @@ def create_app(
     if export_service is not None:
         set_export_service(export_service)
         app.include_router(export.router)
+
+    if api_key_service is not None:
+        set_api_key_service(api_key_service)
+        app.include_router(api_keys.router)
 
     set_quota_service(quota_service)
 
