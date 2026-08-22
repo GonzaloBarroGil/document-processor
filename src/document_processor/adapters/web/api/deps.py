@@ -41,6 +41,11 @@ def get_auth_service() -> AuthService:
     return _auth_service
 
 
+def get_optional_auth_service() -> AuthService | None:
+    """Return the application-wide AuthService instance, or None if not configured."""
+    return _auth_service
+
+
 def set_review_service(service: ReviewService) -> None:
     """Set the application-wide ReviewService instance."""
     global _review_service
@@ -82,6 +87,24 @@ async def get_current_user(
 ) -> User:
     """Return the authenticated user identified by the Bearer token."""
     if authorization is None or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid credentials")
+
+    token = authorization.removeprefix("Bearer ")
+    try:
+        return await auth_service.current_user(token)
+    except AuthenticationError as e:
+        raise HTTPException(status_code=401, detail="Missing or invalid credentials") from e
+
+
+async def get_optional_current_user(
+    authorization: str | None = Header(default=None),
+    auth_service: AuthService | None = Depends(get_optional_auth_service),  # noqa: B008
+) -> User | None:
+    """Return the authenticated user from the Bearer token, or None for machine clients."""
+    if authorization is None or not authorization.startswith("Bearer "):
+        return None
+
+    if auth_service is None:
         raise HTTPException(status_code=401, detail="Missing or invalid credentials")
 
     token = authorization.removeprefix("Bearer ")

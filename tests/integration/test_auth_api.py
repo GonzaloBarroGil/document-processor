@@ -142,3 +142,17 @@ class TestLogout:
     def test_logout_without_bearer(self, client: TestClient) -> None:
         response = client.post("/api/v1/auth/logout")
         assert response.status_code == 401
+
+
+class TestDocumentsBearerAuth:
+    def test_documents_accept_bearer(self, client: TestClient) -> None:
+        login = _login(client)
+        response = client.get(
+            "/api/v1/documents",
+            headers={"Authorization": f"Bearer {login['access_token']}"},
+        )
+        assert response.status_code == 200
+
+    def test_documents_reject_invalid_bearer(self, client: TestClient) -> None:
+        response = client.get("/api/v1/documents", headers={"Authorization": "Bearer not-a-token"})
+        assert response.status_code == 401

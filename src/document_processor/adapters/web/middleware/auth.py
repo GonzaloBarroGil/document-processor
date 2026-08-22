@@ -47,6 +47,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if path in self.PUBLIC_PATHS or self._is_bearer_only(path):
             return await call_next(request)
 
+        authorization = request.headers.get("Authorization", "")
+        if authorization.startswith("Bearer "):
+            return await call_next(request)
+
         api_key = request.headers.get("X-API-Key")
         if api_key is None:
             return JSONResponse(status_code=401, content={"detail": "Missing X-API-Key header"})

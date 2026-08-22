@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse, Response
 
 from document_processor.adapters.web.api.deps import (
     get_document_service,
+    get_optional_current_user,
     get_quota_service,
 )
 from document_processor.core.errors import (
@@ -15,6 +16,7 @@ from document_processor.core.errors import (
     ImageExpiredError,
     UnsupportedMediaTypeError,
 )
+from document_processor.domain.models.user import User
 from document_processor.domain.services.document_service import DocumentService
 from document_processor.domain.services.quota_service import (
     QuotaService,
@@ -32,6 +34,7 @@ async def ingest_document(
     x_api_key: str | None = Header(default=None),
     service: DocumentService = Depends(get_document_service),  # noqa: B008
     quota: QuotaService | None = Depends(get_quota_service),  # noqa: B008
+    user: User | None = Depends(get_optional_current_user),  # noqa: B008
 ) -> dict[str, str] | JSONResponse:
     """Ingest an uploaded document and enqueue it for processing."""
     try:
@@ -72,6 +75,7 @@ async def ingest_document(
 async def get_document(
     document_id: UUID,
     service: DocumentService = Depends(get_document_service),  # noqa: B008
+    user: User | None = Depends(get_optional_current_user),  # noqa: B008
 ) -> dict[str, Any] | JSONResponse:
     """Return the document with the given id."""
     try:
@@ -89,6 +93,7 @@ async def list_documents(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     service: DocumentService = Depends(get_document_service),  # noqa: B008
+    user: User | None = Depends(get_optional_current_user),  # noqa: B008
 ) -> dict[str, Any]:
     """Return a filtered, paginated list of documents."""
     docs, total = await service.list_documents(
@@ -107,6 +112,7 @@ async def list_documents(
 async def get_document_image(
     document_id: UUID,
     service: DocumentService = Depends(get_document_service),  # noqa: B008
+    user: User | None = Depends(get_optional_current_user),  # noqa: B008
 ) -> Response | JSONResponse:
     """Return the stored image for the given document."""
     try:
