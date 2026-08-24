@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Lint · typecheck · test · coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check src/ tests/
+
+      - name: Format check
+        run: ruff format --check src/
+
+      - name: Typecheck
+        run: mypy -p document_processor
+
+      - name: Unit + BDD tests (measure coverage)
+        run: pytest tests/unit tests/bdd --cov=src --cov-report=
+
+      - name: Coverage gate (domain ≥90%)
+        run: coverage report --include="*/document_processor/domain/*" --fail-under=90
+
+      - name: Coverage gate (adapters ≥70%)
+        run: coverage report --include="*/document_processor/adapters/*" --fail-under=70
+
+      - name: Integration tests
+        run: pytest tests/integration
