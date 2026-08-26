@@ -44,3 +44,6 @@ jobs:
 
       - name: Static contract comparison
         run: python scripts/check_contract.py /tmp/openapi.yaml
+
+      - name: Runtime fuzzing (schemathesis)
+        run: CONTRACT_PATH=/tmp/openapi.yaml pytest tests/contract --no-cov

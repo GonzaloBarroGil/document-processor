@@ -99,16 +99,15 @@ class DocumentService:
 
     async def list_documents(
         self,
-        status: str | None = None,
+        status: DocumentStatus | None = None,
         type: str | None = None,
         region: str | None = None,
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[Document], int]:
         """Return a filtered page of documents and the total count."""
-        doc_status = DocumentStatus(status) if status else None
         return await self._repository.list_documents(
-            status=doc_status, type=type, region=region, page=page, size=size
+            status=status, type=type, region=region, page=page, size=size
         )
 
     async def get_document_image(self, document_id: UUID) -> bytes:
