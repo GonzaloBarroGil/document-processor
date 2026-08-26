@@ -16,6 +16,7 @@ from document_processor.core.errors import (
     ImageExpiredError,
     UnsupportedMediaTypeError,
 )
+from document_processor.domain.models.document import DocumentStatus
 from document_processor.domain.models.user import User
 from document_processor.domain.services.document_service import DocumentService
 from document_processor.domain.services.quota_service import (
@@ -87,7 +88,7 @@ async def get_document(
 
 @router.get("")
 async def list_documents(
-    status: str | None = Query(None),
+    status: DocumentStatus | None = Query(None),  # noqa: B008
     type: str | None = Query(None),
     region: str | None = Query(None),
     page: int = Query(1, ge=1),

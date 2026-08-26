@@ -66,7 +66,11 @@ class TestTokenService:
 
     def test_decode_rejects_tampered_token(self, service: TokenService) -> None:
         token = service.issue_access_token(uuid4(), UserRole.REVIEWER)
-        tampered = token[:-1] + ("A" if token[-1] != "A" else "B")
+        # Tamper the second-to-last base64url char, not the last: the final char of a 32-byte
+        # HS256 signature only carries 4 significant bits (its low 2 bits are padding), so
+        # flipping it can leave the decoded signature unchanged and make this test flaky.
+        pos = len(token) - 2
+        tampered = token[:pos] + ("A" if token[pos] != "A" else "B") + token[pos + 1 :]
 
         with pytest.raises(InvalidTokenError):
             service.decode(tampered, TokenType.ACCESS)

@@ -14,19 +14,6 @@ jobs:
   validate-contract:
     name: Validate server against contract
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: document_processor_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -34,10 +21,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@v5
-
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: pip install -e ".[dev]"
 
       - name: Resolve contract ref
         id: ref
@@ -50,14 +35,15 @@ jobs:
             "https://raw.githubusercontent.com/GonzaloBarroGil/document-processor-orchestration/${{ steps.ref.outputs.ref }}/docs/contracts/openapi.yaml" \
             -o /tmp/openapi.yaml
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Spectral lint
         run: npx @stoplight/spectral-cli lint /tmp/openapi.yaml
 
-      - name: Schemathesis contract test
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/document_processor_test
-        run: |
-          uv run schemathesis run /tmp/openapi.yaml \
-            --base-url http://localhost:8000 \
-            --checks all \
-            --report
+      - name: Static contract comparison
+        run: python scripts/check_contract.py /tmp/openapi.yaml
+
+      - name: Runtime fuzzing (schemathesis)
+        run: CONTRACT_PATH=/tmp/openapi.yaml pytest tests/contract --no-cov

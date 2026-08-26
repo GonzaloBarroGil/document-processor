@@ -31,6 +31,8 @@ dev = [
     "httpx>=0.28",
     "ruff>=0.8",
     "mypy>=1.13",
+    "pyyaml>=6.0",
+    "schemathesis>=3.39",
     "testcontainers>=4.9",
 ]
 
