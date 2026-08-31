@@ -17,6 +17,7 @@ async def create_key(label: str) -> None:
     async with session_factory() as session:
         service = ApiKeyService(PostgresApiKeyRepository(session))
         created = await service.create_key(label or None)
+        await session.commit()
 
     print("API Key created (save it now — not shown again):")
     print(f"  Key:   {created.key}")
@@ -46,6 +47,7 @@ async def revoke_key(prefix: str) -> None:
         service = ApiKeyService(PostgresApiKeyRepository(session))
         try:
             await service.revoke(prefix)
+            await session.commit()
         except ApiKeyNotFoundError:
             print(f"No key found with prefix {prefix}")
             return

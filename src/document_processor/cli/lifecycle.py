@@ -26,6 +26,7 @@ async def _run_lifecycle() -> None:
         repo = PostgresDocumentRepository(session)
         service = StorageLifecycleService(repository=repo, storage=storage)
         expired = await service.evaluate()
+        await session.commit()
 
         if expired:
             logger.info("Expired %d images", len(expired))

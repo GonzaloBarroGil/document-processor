@@ -66,9 +66,13 @@ testpaths = ["tests"]
 addopts = "-v --cov=src --cov-report=term-missing"
 
 [project.scripts]
-docproc = "document_processor.cli:main"
 docproc-worker = "document_processor.cli.worker:main"
 docproc-keys = "document_processor.cli.api_keys:main"
+docproc-user = "document_processor.cli.user:main"
+docproc-lifecycle = "document_processor.cli.lifecycle:main"
 
 [project.entry-points."document_processor.validators"]
 ar = "document_processor.adapters.validators.ar.validator:ArgentinaValidator"
+
+[tool.setuptools.packages.find]
+where = ["src"]

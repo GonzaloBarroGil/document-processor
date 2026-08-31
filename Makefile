@@ -1,7 +1,10 @@
-.PHONY: install lint typecheck test test-cov test-unit test-integration test-bdd build up down clean all
+.PHONY: install lint typecheck test test-cov test-unit test-integration test-bdd migrate build up down clean all
 
 install:
 	pip install -e ".[dev]"
+
+migrate:
+	alembic -c src/document_processor/adapters/persistence/postgresql/alembic.ini upgrade head
 
 lint:
 	ruff check src/ tests/
