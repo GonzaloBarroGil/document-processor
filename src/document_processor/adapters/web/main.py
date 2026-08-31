@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from document_processor.adapters.web.api import (
     api_keys,
@@ -20,6 +21,7 @@ from document_processor.adapters.web.api.deps import (
 )
 from document_processor.adapters.web.middleware.auth import AuthMiddleware
 from document_processor.adapters.web.middleware.rate_limit import RateLimitMiddleware
+from document_processor.core.config import settings
 from document_processor.domain.ports.api_key_repository import ApiKeyRepositoryPort
 from document_processor.domain.ports.region_validator import RegionValidatorPort
 from document_processor.domain.services.api_key_service import ApiKeyService
@@ -47,6 +49,13 @@ def create_app(
 
     app = FastAPI(title="Document Processor", version="0.1.0")
 
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_allow_origins,
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(AuthMiddleware, api_key_repository=api_key_repository)
 
