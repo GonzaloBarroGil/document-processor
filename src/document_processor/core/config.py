@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     rate_limit_window_seconds: int = 60
     daily_document_cap: int = 100
 
+    storage_quota_bytes: int = 10 * 1024 * 1024 * 1024
     storage_high_watermark_pct: float = 85.0
     storage_critical_pct: float = 95.0
     storage_alert_ack_window_hours: int = 72

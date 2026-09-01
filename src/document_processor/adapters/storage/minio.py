@@ -56,7 +56,6 @@ class MinioStorage(StoragePort):
         objects = self._client.list_objects(bucket_name=settings.minio_bucket, recursive=True)
         total_size = sum(int(obj.size or 0) for obj in objects)
 
-        quota_bytes = 10 * 1024 * 1024 * 1024
         if total_size == 0:
             return 0.0
-        return (float(total_size) / float(quota_bytes)) * 100.0
+        return (float(total_size) / float(settings.storage_quota_bytes)) * 100.0

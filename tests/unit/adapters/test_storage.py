@@ -30,12 +30,26 @@ class TestMinioStorage:
     async def test_retrieve_not_found(self, storage: MinioStorage) -> None:
         from minio.error import S3Error
 
-        storage._client.get_object.side_effect = S3Error(
-            "NoSuchKey", "", 404, "", "", ""
-        )
+        storage._client.get_object.side_effect = S3Error("NoSuchKey", "", 404, "", "", "")
         result = await storage.retrieve("missing.txt")
         assert result is None
 
     async def test_delete(self, storage: MinioStorage) -> None:
         await storage.delete("key.txt")
         storage._client.remove_object.assert_called_once()
+
+    async def test_usage_pct_uses_configured_quota(self, storage: MinioStorage) -> None:
+        from document_processor.core.config import settings
+
+        object_ = MagicMock()
+        object_.size = settings.storage_quota_bytes // 2
+        storage._client.list_objects.return_value = [object_]
+
+        result = await storage.usage_pct()
+        assert result == 50.0
+
+    async def test_usage_pct_zero_when_empty(self, storage: MinioStorage) -> None:
+        storage._client.list_objects.return_value = []
+
+        result = await storage.usage_pct()
+        assert result == 0.0
