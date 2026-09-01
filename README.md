@@ -145,6 +145,6 @@ See `src/document_processor/core/config.py` for full defaults.
 - [Specification](docs/spec.md) — 9 features, 31 Gherkin scenarios
 - [Glossary](docs/glossary.md) — points to the family glossary (governance hub)
 - [Implementation Plan](docs/plan.md) — 37 tasks, component diagrams, data model
-- [Architecture Decision Records](docs/adr/) — 10 ADRs
+- [Architecture Decision Records](docs/adr/) — 12 ADRs
 - **Operations** — run/deploy/database/storage guide in the governance hub
   (`document-processor-orchestration` → `docs/operations.md`)
