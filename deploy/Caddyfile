@@ -1,0 +1,25 @@
+# Document Processor — Caddy reverse proxy (template)
+#
+# Replace app.example.com / api.example.com with your real hostnames before deploy.
+# Cloudflare (proxied DNS) sits in front of this box; Caddy terminates TLS via
+# Let's Encrypt. See document-processor-orchestration/docs/operations.md §4.3.
+
+app.example.com {
+    encode gzip
+
+    root * /srv/web
+    try_files {path} /index.html
+    file_server
+
+    log {
+        output stdout
+    }
+}
+
+api.example.com {
+    reverse_proxy app:8000
+
+    log {
+        output stdout
+    }
+}

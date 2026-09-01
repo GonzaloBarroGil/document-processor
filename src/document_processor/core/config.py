@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     rate_limit_window_seconds: int = 60
     daily_document_cap: int = 100
 
+    storage_quota_bytes: int = 10 * 1024 * 1024 * 1024
     storage_high_watermark_pct: float = 85.0
     storage_critical_pct: float = 95.0
     storage_alert_ack_window_hours: int = 72
@@ -51,6 +52,12 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_ttl_seconds: int = 15 * 60
     refresh_token_ttl_seconds: int = 7 * 24 * 60 * 60
+
+    cors_allow_origins: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "http://localhost:3000",
+    ]
 
     log_level: str = "INFO"
 
